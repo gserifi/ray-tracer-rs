@@ -1,8 +1,9 @@
+use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 pub trait Hittable {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool;
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -31,7 +32,9 @@ impl HitRecord {
             front_face,
         }
     }
+}
 
+impl HitRecord {
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
         self.front_face = r.direction().dot(&outward_normal) < 0.0;
         self.normal = if self.front_face {
@@ -52,20 +55,22 @@ impl HittableList {
             objects: Vec::new(),
         }
     }
+}
 
+impl HittableList {
     pub fn add(&mut self, object: Box<dyn Hittable>) {
         self.objects.push(object);
     }
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord::empty();
         let mut hit_anything = false;
-        let mut closest_so_far = t_max;
+        let mut closest_so_far = t.max;
 
         for object in &self.objects {
-            if object.hit(r, t_min, closest_so_far, &mut temp_rec) {
+            if object.hit(r, Interval::new(t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec;

@@ -1,11 +1,13 @@
 mod color;
 mod hittable;
+mod interval;
 mod ray;
 mod sphere;
 mod vec3;
 
 use crate::color::ColorWriter;
 use crate::hittable::{HitRecord, Hittable, HittableList};
+use crate::interval::Interval;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3::{Color, Point3, Vec3, XYZAccessor};
@@ -26,7 +28,7 @@ fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
 
 fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
     let mut rec = HitRecord::empty();
-    if world.hit(r, 0.0, f64::INFINITY, &mut rec) {
+    if world.hit(r, Interval::right_open(0.0), &mut rec) {
         return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
 
@@ -39,7 +41,7 @@ fn main() {
     // Image
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let image_width = 1080;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
 
     eprintln!("Image Width: {}, Height: {}", image_width, image_height);
@@ -82,6 +84,7 @@ fn main() {
             let pixel_color = ray_color(&r, &world);
             println!("{}", pixel_color.write_color());
         }
+
         eprint!(
             "\rRendering Output: {:.1}% completed",
             (j as f64 / (image_height - 1) as f64) * 100.0
