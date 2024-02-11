@@ -1,10 +1,13 @@
 mod color;
 mod hittable;
 mod ray;
+mod sphere;
 mod vec3;
 
 use crate::color::ColorWriter;
+use crate::hittable::{HitRecord, Hittable, HittableList};
 use crate::ray::Ray;
+use crate::sphere::Sphere;
 use crate::vec3::{Color, Point3, Vec3, XYZAccessor};
 
 fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
@@ -21,11 +24,10 @@ fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
     }
 }
 
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
-    if t > 0.0 {
-        let n = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalize();
-        return 0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
+fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
+    let mut rec = HitRecord::empty();
+    if world.hit(r, 0.0, f64::INFINITY, &mut rec) {
+        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
     }
 
     let unit_direction = r.direction();
@@ -33,26 +35,24 @@ fn ray_color(r: &Ray) -> Color {
     Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
 
-fn write_ppm(w: i32, h: i32) {
-    println!("P3\n{} {}\n{}", w, h, 255);
-
-    for j in (0..h).rev() {
-        for i in 0..w {
-            let col = Color::new(i as f64 / w as f64, j as f64 / h as f64, 0.1);
-            println!("{}", col.write_color());
-        }
-    }
-}
-
 fn main() {
     // Image
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 720;
+    let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
+
+    eprintln!("Image Width: {}, Height: {}", image_width, image_height);
 
     let viewport_height = 2.0;
     let viewport_width = viewport_height * (image_width as f64 / image_height as f64);
+
+    // World
+
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
 
     // Camera
 
@@ -79,8 +79,14 @@ fn main() {
             let ray_direction = pixel_center - camera_origin;
             let r = Ray::new(camera_origin, ray_direction);
 
-            let pixel_color = ray_color(&r);
+            let pixel_color = ray_color(&r, &world);
             println!("{}", pixel_color.write_color());
         }
+        eprint!(
+            "\rRendering Output: {:.1}% completed",
+            (j as f64 / (image_height - 1) as f64) * 100.0
+        );
     }
+
+    eprintln!("\nDone!");
 }
