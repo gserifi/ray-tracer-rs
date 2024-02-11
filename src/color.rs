@@ -1,11 +1,15 @@
-pub use crate::vec3::Vec3;
+pub use crate::vec3::{Color, RGBAccessor};
 
-pub use Vec3 as Color;
+pub trait ColorWriter {
+    fn write_color(&self) -> String;
+}
 
-pub fn write_color(pixel_color: Color) -> String {
-    let ir: i32 = (255.99 * pixel_color.r()) as i32;
-    let ig: i32 = (255.99 * pixel_color.g()) as i32;
-    let ib: i32 = (255.99 * pixel_color.b()) as i32;
+impl ColorWriter for Color {
+    fn write_color(&self) -> String {
+        let ir: i32 = (255.99 * self.r()) as i32;
+        let ig: i32 = (255.99 * self.g()) as i32;
+        let ib: i32 = (255.99 * self.b()) as i32;
 
-    format!("{} {} {}", ir, ig, ib)
+        format!("{} {} {}", ir, ig, ib)
+    }
 }

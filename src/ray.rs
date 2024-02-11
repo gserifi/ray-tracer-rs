@@ -8,10 +8,10 @@ pub struct Ray {
 
 // Constructors
 impl Ray {
-    pub fn ray(origin: Point3, direction: Vec3) -> Ray {
+    pub fn new(origin: Point3, direction: Vec3) -> Ray {
         Ray {
             origin,
-            direction: direction.normalized(),
+            direction: direction.normalize(),
         }
     }
 }
@@ -40,21 +40,21 @@ mod tests {
 
     #[test]
     fn ray_origin() {
-        let r = Ray::ray(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
+        let r = Ray::new(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
 
         assert_eq!(r.origin(), Point3::new(1.0, 2.0, 3.0));
     }
 
     #[test]
     fn ray_direction() {
-        let r = Ray::ray(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
+        let r = Ray::new(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
 
-        assert_eq!(r.direction(), Point3::new(1.0, 1.0, 1.0).normalized());
+        assert_eq!(r.direction(), Point3::new(1.0, 1.0, 1.0).normalize());
     }
 
     #[test]
     fn ray_at() {
-        let r = Ray::ray(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
+        let r = Ray::new(Point3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 1.0, 1.0));
 
         assert_eq!(r.at(0.0), Point3::new(1.0, 2.0, 3.0));
         assert_eq!(r.at(1.0), r.origin() + r.direction());
