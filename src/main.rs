@@ -4,6 +4,7 @@ mod hittable;
 mod interval;
 mod ray;
 mod sphere;
+mod utils;
 mod vec3;
 
 use crate::camera::Camera;
@@ -23,7 +24,8 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
-    cam.image_width = 400;
+    cam.image_width = 1080;
+    cam.samples_per_pixel = 50;
 
     cam.render(&world);
 }

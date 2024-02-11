@@ -1,15 +1,28 @@
+use crate::interval::Interval;
 pub use crate::vec3::{Color, RGBAccessor};
 
 pub trait ColorWriter {
-    fn write_color(&self) -> String;
+    fn write_color(&self, samples_per_pixel: i32) -> String;
 }
 
 impl ColorWriter for Color {
-    fn write_color(&self) -> String {
-        let ir: i32 = (255.99 * self.r()) as i32;
-        let ig: i32 = (255.99 * self.g()) as i32;
-        let ib: i32 = (255.99 * self.b()) as i32;
+    fn write_color(&self, samples_per_pixel: i32) -> String {
+        let mut r = self.r();
+        let mut g = self.g();
+        let mut b = self.b();
 
-        format!("{} {} {}", ir, ig, ib)
+        let scale = 1.0 / samples_per_pixel as f64;
+        r *= scale;
+        g *= scale;
+        b *= scale;
+
+        let intensity = Interval::new(0.0, 0.999);
+
+        format!(
+            "{} {} {}",
+            (256.0 * intensity.clamp(r)) as i32,
+            (256.0 * intensity.clamp(g)) as i32,
+            (256.0 * intensity.clamp(b)) as i32
+        )
     }
 }

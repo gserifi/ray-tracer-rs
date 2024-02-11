@@ -2,11 +2,13 @@ use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
+use crate::utils::random;
 use crate::vec3::{Point3, Vec3, XYZAccessor};
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
+    pub samples_per_pixel: i32,
 
     // Derived
     image_height: i32,
@@ -21,6 +23,7 @@ impl Camera {
         Self {
             aspect_ratio: 16.0 / 9.0,
             image_width: 100,
+            samples_per_pixel: 10,
 
             // Derived
             image_height: 0,
@@ -40,14 +43,14 @@ impl Camera {
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (i as f64 * self.pixel_delta_u)
-                    + (j as f64 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.origin;
-                let r = Ray::new(self.origin, ray_direction);
+                let mut pixel_color: Color = Color::zeros();
 
-                let pixel_color = Camera::ray_color(&r, world);
-                println!("{}", pixel_color.write_color());
+                // Super Sampling
+                for _ in 0..self.samples_per_pixel {
+                    let r = self.get_ray(i, j);
+                    pixel_color += Camera::ray_color(&r, world);
+                }
+                println!("{}", pixel_color.write_color(self.samples_per_pixel));
             }
 
             eprint!(
@@ -55,7 +58,6 @@ impl Camera {
                 (j as f64 / (self.image_height - 1) as f64) * 100.0
             );
         }
-
         eprintln!("\rDone.                                  \n");
     }
 
@@ -89,5 +91,21 @@ impl Camera {
         let unit_direction = r.direction();
         let t = 0.5 * (unit_direction.y() + 1.0);
         Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let pixel_center =
+            self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
+        let ray_direction = pixel_sample - self.origin;
+
+        Ray::new(self.origin, ray_direction)
+    }
+
+    fn pixel_sample_square(&self) -> Vec3 {
+        let px = -0.5 + random();
+        let py = -0.5 + random();
+
+        px * self.pixel_delta_u + py * self.pixel_delta_v
     }
 }
