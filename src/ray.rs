@@ -11,7 +11,7 @@ impl Ray {
     pub fn new(origin: Point3, direction: Vec3) -> Ray {
         Ray {
             origin,
-            direction: direction.normalize(),
+            direction: direction.normalize(), // Keeping the direction vector at unit length
         }
     }
 }
