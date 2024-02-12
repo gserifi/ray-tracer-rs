@@ -1,8 +1,6 @@
 extern crate nalgebra as na;
 
 use na::Vector3 as _Vector3;
-use rand::prelude::*;
-use std::f64::consts::PI;
 
 pub type Vec3 = _Vector3<f64>;
 pub type Point3 = _Vector3<f64>;
@@ -46,4 +44,9 @@ impl RGBAccessor for Color {
     fn b(&self) -> f64 {
         self[2]
     }
+}
+
+pub fn near_zero(v: &Vec3) -> bool {
+    let s = 1e-8;
+    v.x().abs() < s && v.y().abs() < s && v.z().abs() < s
 }

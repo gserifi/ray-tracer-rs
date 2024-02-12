@@ -1,15 +1,17 @@
 use crate::interval::Interval;
+use crate::material::{Lambertian, Material};
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use std::rc::Rc;
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool;
 }
 
-#[derive(Debug, Copy, Clone)]
 pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,
+    pub mat: Rc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -20,16 +22,8 @@ impl HitRecord {
             p: Vec3::zeros(),
             normal: Vec3::zeros(),
             t: 0.0,
+            mat: Rc::new(Lambertian::new(Vec3::zeros())),
             front_face: false,
-        }
-    }
-
-    pub fn new(p: Vec3, normal: Vec3, t: f64, front_face: bool) -> Self {
-        Self {
-            p,
-            normal,
-            t,
-            front_face,
         }
     }
 }
@@ -65,15 +59,13 @@ impl HittableList {
 
 impl Hittable for HittableList {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
-        let mut temp_rec = HitRecord::empty();
         let mut hit_anything = false;
         let mut closest_so_far = t.max;
 
         for object in &self.objects {
-            if object.hit(r, Interval::new(t.min, closest_so_far), &mut temp_rec) {
+            if object.hit(r, Interval::new(t.min, closest_so_far), rec) {
                 hit_anything = true;
-                closest_so_far = temp_rec.t;
-                *rec = temp_rec;
+                closest_so_far = rec.t;
             }
         }
 

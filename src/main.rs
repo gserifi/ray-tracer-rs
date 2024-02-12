@@ -1,19 +1,22 @@
 use std::env;
 use std::path::Path;
+use std::rc::Rc;
 
 mod camera;
 mod color;
 mod hittable;
 mod interval;
+mod material;
 mod ray;
 mod sphere;
 mod utils;
 mod vec3;
 
 use crate::camera::Camera;
-use crate::hittable::{Hittable, HittableList};
+use crate::hittable::HittableList;
+use crate::material::Lambertian;
 use crate::sphere::Sphere;
-use crate::vec3::{Point3, XYZAccessor};
+use crate::vec3::Point3;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -21,8 +24,17 @@ fn main() {
 
     let mut world = HittableList::new();
 
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        Rc::new(Lambertian::new(Point3::new(0.7, 0.3, 0.3))),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        Rc::new(Lambertian::new(Point3::new(0.7, 0.3, 0.3))),
+    )));
 
     // Camera
 
