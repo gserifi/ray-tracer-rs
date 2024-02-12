@@ -14,7 +14,7 @@ mod vec3;
 
 use crate::camera::Camera;
 use crate::hittable::HittableList;
-use crate::material::{Lambertian, Metal};
+use crate::material::{Dielectric, Lambertian, Material, Metal};
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
 
@@ -24,30 +24,35 @@ fn main() {
 
     let mut world = HittableList::new();
 
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.6)));
-    let material_center = Rc::new(Lambertian::new(Vec3::new(0.3, 0.8, 0.3)));
-    let material_left = Rc::new(Metal::new(Vec3::new(0.8, 0.3, 0.3), 0.02));
-    let material_right = Rc::new(Metal::new(Vec3::new(0.3, 0.3, 0.8), 0.3));
+    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.4, 0.4, 0.5))) as Rc<dyn Material>;
+    let material_center = Rc::new(Dielectric::new(1.5)) as Rc<dyn Material>;
+    let material_left = Rc::new(Metal::new(Vec3::new(0.8, 0.3, 0.3), 0.02)) as Rc<dyn Material>;
+    let material_right = Rc::new(Metal::new(Vec3::new(0.3, 0.3, 0.8), 0.3)) as Rc<dyn Material>;
 
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
-        material_ground,
+        Rc::clone(&material_ground),
     )));
     world.add(Box::new(Sphere::new(
-        Point3::new(0.0, 0.0, -1.0),
+        Point3::new(0.0, 0.05, -0.9),
         0.5,
-        material_center,
+        Rc::clone(&material_center),
     )));
     world.add(Box::new(Sphere::new(
-        Point3::new(-1.0, 0.0, -1.1),
-        0.5,
-        material_left,
+        Point3::new(0.0, 0.05, -0.9),
+        -0.4,
+        Rc::clone(&material_center),
     )));
     world.add(Box::new(Sphere::new(
-        Point3::new(1.0, 0.0, -1.1),
+        Point3::new(-0.75, 0.3, -1.6),
         0.5,
-        material_right,
+        Rc::clone(&material_left),
+    )));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.75, 0.0, -1.6),
+        0.5,
+        Rc::clone(&material_right),
     )));
 
     // Camera
@@ -57,8 +62,8 @@ fn main() {
 
     if &args[1] == "dev" {
         cam.image_width = 1080;
-        cam.samples_per_pixel = 20;
-        cam.max_depth = 5;
+        cam.samples_per_pixel = 100;
+        cam.max_depth = 50;
         cam.focal_length = 1.0;
         output_path = Path::new("images/output.png");
     } else if &args[1] == "latest" {
