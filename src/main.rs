@@ -8,10 +8,14 @@ mod utils;
 mod vec3;
 
 use crate::camera::Camera;
-use crate::color::ColorWriter;
 use crate::hittable::{Hittable, HittableList};
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, XYZAccessor};
+
+enum RenderMode {
+    QUICK,
+    ULTRA,
+}
 
 fn main() {
     // World
@@ -24,10 +28,20 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
-    // 8K: 7680 x 4320, 4K: 3840 x 2160, FullHD: 1920 x 1080
-    cam.image_width = 3840;
-    cam.samples_per_pixel = 200;
-    cam.max_depth = 100;
+    let render_mode = RenderMode::ULTRA;
+
+    match render_mode {
+        RenderMode::QUICK => {
+            cam.image_width = 1080;
+            cam.samples_per_pixel = 100;
+            cam.max_depth = 50;
+        }
+        RenderMode::ULTRA => {
+            cam.image_width = 3840;
+            cam.samples_per_pixel = 200;
+            cam.max_depth = 100;
+        }
+    }
 
     cam.render(&world);
 }

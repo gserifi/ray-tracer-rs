@@ -3,11 +3,11 @@ use rand::prelude::*;
 use std::path::Path;
 use tqdm::tqdm;
 
-use crate::color::{Color, ColorWriter};
+use crate::color::{color_to_rgb8, linear_to_gamma, Color};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::utils::{random_hemisphere_vector, random_unit_sphere_vector};
+use crate::utils::random_unit_sphere_vector;
 use crate::vec3::{Point3, Vec3, XYZAccessor};
 
 pub struct Camera {
@@ -61,14 +61,10 @@ impl Camera {
                 }
 
                 pixel_color /= self.samples_per_pixel as f64;
+                pixel_color = linear_to_gamma(&pixel_color);
 
-                output_image.put_pixel(i, j, pixel_color.to_rgb());
+                output_image.put_pixel(i, j, color_to_rgb8(&pixel_color));
             }
-
-            print!(
-                "\rRendering Output: {:.1}% completed",
-                (j as f64 / (self.image_height - 1) as f64) * 100.0
-            );
         }
 
         let path = Path::new("images/output.png");
@@ -105,7 +101,7 @@ impl Camera {
         let mut rec = HitRecord::empty();
         if world.hit(r, Interval::right_open(0.001), &mut rec) {
             let direction = rec.normal + random_unit_sphere_vector(&mut self.rng);
-            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
+            return 0.6 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
 
         let unit_direction = r.direction();
