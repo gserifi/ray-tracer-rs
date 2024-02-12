@@ -50,3 +50,7 @@ pub fn near_zero(v: &Vec3) -> bool {
     let s = 1e-8;
     v.x().abs() < s && v.y().abs() < s && v.z().abs() < s
 }
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - 2.0 * v.dot(n) * n
+}

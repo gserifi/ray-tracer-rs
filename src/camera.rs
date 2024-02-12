@@ -17,6 +17,7 @@ pub struct Camera {
     pub image_width: u32,
     pub samples_per_pixel: u32,
     pub max_depth: u32,
+    pub focal_length: f64,
 
     // Derived
     image_height: u32,
@@ -34,6 +35,7 @@ impl Camera {
             image_width: 100,
             samples_per_pixel: 100,
             max_depth: 50,
+            focal_length: 1.0,
 
             // Derived
             image_height: 0,
@@ -77,7 +79,6 @@ impl Camera {
         let viewport_height = 2.0;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
-        let focal_length = 1.0;
         let camera_origin = Vec3::zeros();
 
         // Viewport Vectors
@@ -87,8 +88,10 @@ impl Camera {
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
-        let viewport_upper_left =
-            camera_origin - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+        let viewport_upper_left = camera_origin
+            - Vec3::new(0.0, 0.0, self.focal_length)
+            - viewport_u / 2.0
+            - viewport_v / 2.0;
         self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
     }
 
@@ -99,8 +102,17 @@ impl Camera {
 
         let mut rec = HitRecord::empty();
         if world.hit(r, Interval::right_open(0.001), &mut rec) {
-            let direction = rec.normal + random_unit_sphere_vector(&mut self.rng);
-            return 0.6 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
+            let mut scattered = Ray::new(Point3::zeros(), Vec3::new(1.0, 0.0, 0.0));
+            let mut attenuation = Color::zeros();
+
+            if rec
+                .mat
+                .scatter(r, &rec, &mut self.rng, &mut attenuation, &mut scattered)
+            {
+                return attenuation.component_mul(&self.ray_color(&scattered, depth - 1, world));
+            }
+
+            return Color::zeros();
         }
 
         let unit_direction = r.direction();
