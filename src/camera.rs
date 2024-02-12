@@ -1,6 +1,7 @@
 use image::{ImageBuffer, RgbImage};
 use rand::prelude::*;
 use std::path::Path;
+use tqdm::tqdm;
 
 use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
@@ -49,7 +50,7 @@ impl Camera {
         self.initialize();
         let mut output_image: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
 
-        for j in 0..self.image_height {
+        for j in tqdm(0..self.image_height) {
             for i in 0..self.image_width {
                 let mut pixel_color: Color = Color::zeros();
 
@@ -64,7 +65,7 @@ impl Camera {
                 output_image.put_pixel(i, j, pixel_color.to_rgb());
             }
 
-            eprint!(
+            print!(
                 "\rRendering Output: {:.1}% completed",
                 (j as f64 / (self.image_height - 1) as f64) * 100.0
             );
@@ -72,7 +73,7 @@ impl Camera {
 
         let path = Path::new("images/output.png");
         output_image.save(path).unwrap();
-        eprintln!("\rDone.                                  \n");
+        println!("\rDone.                                  \n");
     }
 
     fn initialize(&mut self) {
