@@ -1,3 +1,6 @@
+use std::env;
+use std::path::Path;
+
 mod camera;
 mod color;
 mod hittable;
@@ -12,12 +15,8 @@ use crate::hittable::{Hittable, HittableList};
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, XYZAccessor};
 
-enum RenderMode {
-    QUICK,
-    ULTRA,
-}
-
 fn main() {
+    let args: Vec<String> = env::args().collect();
     // World
 
     let mut world = HittableList::new();
@@ -28,20 +27,21 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
-    let render_mode = RenderMode::ULTRA;
+    let output_path: &Path;
 
-    match render_mode {
-        RenderMode::QUICK => {
-            cam.image_width = 1080;
-            cam.samples_per_pixel = 100;
-            cam.max_depth = 50;
-        }
-        RenderMode::ULTRA => {
-            cam.image_width = 3840;
-            cam.samples_per_pixel = 200;
-            cam.max_depth = 100;
-        }
+    if &args[1] == "dev" {
+        cam.image_width = 1080;
+        cam.samples_per_pixel = 100;
+        cam.max_depth = 50;
+        output_path = Path::new("images/output.png");
+    } else if &args[1] == "latest" {
+        cam.image_width = 3840;
+        cam.samples_per_pixel = 200;
+        cam.max_depth = 100;
+        output_path = Path::new("latest.png");
+    } else {
+        panic!("Invalid argument");
     }
 
-    cam.render(&world);
+    cam.render(&world, output_path);
 }

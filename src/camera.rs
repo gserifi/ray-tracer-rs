@@ -46,7 +46,7 @@ impl Camera {
 }
 
 impl Camera {
-    pub fn render(&mut self, world: &impl Hittable) {
+    pub fn render(&mut self, world: &impl Hittable, path: &Path) {
         self.initialize();
         let mut output_image: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
 
@@ -67,7 +67,6 @@ impl Camera {
             }
         }
 
-        let path = Path::new("images/output.png");
         output_image.save(path).unwrap();
         println!("\rDone.                                  \n");
     }
