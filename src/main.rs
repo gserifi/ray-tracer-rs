@@ -24,8 +24,7 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
-    cam.image_width = 720;
-    cam.samples_per_pixel = 100;
+    cam.image_width = 1080;
 
     cam.render(&world);
 }

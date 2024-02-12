@@ -4,18 +4,19 @@ use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::utils::random_hemisphere_vector;
+use crate::utils::{random_hemisphere_vector, random_unit_sphere_vector};
 use crate::vec3::{Point3, Vec3, XYZAccessor};
 
 pub struct Camera {
     rng: ThreadRng,
 
     pub aspect_ratio: f64,
-    pub image_width: i32,
-    pub samples_per_pixel: i32,
+    pub image_width: u32,
+    pub samples_per_pixel: u32,
+    pub max_depth: u32,
 
     // Derived
-    image_height: i32,
+    image_height: u32,
     origin: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
@@ -28,7 +29,8 @@ impl Camera {
             rng: thread_rng(),
             aspect_ratio: 16.0 / 9.0,
             image_width: 100,
-            samples_per_pixel: 10,
+            samples_per_pixel: 100,
+            max_depth: 50,
 
             // Derived
             image_height: 0,
@@ -53,7 +55,7 @@ impl Camera {
                 // Super Sampling
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(&r, world);
+                    pixel_color += self.ray_color(&r, self.max_depth, world);
                 }
                 println!("{}", pixel_color.write_color(self.samples_per_pixel));
             }
@@ -67,7 +69,7 @@ impl Camera {
     }
 
     fn initialize(&mut self) {
-        self.image_height = (self.image_width as f64 / self.aspect_ratio) as i32;
+        self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
 
         let viewport_height = 2.0;
         let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
@@ -87,11 +89,15 @@ impl Camera {
         self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
     }
 
-    fn ray_color(&mut self, r: &Ray, world: &impl Hittable) -> Color {
+    fn ray_color(&mut self, r: &Ray, depth: u32, world: &impl Hittable) -> Color {
+        if depth == 0 {
+            return Color::zeros();
+        }
+
         let mut rec = HitRecord::empty();
-        if world.hit(r, Interval::right_open(0.0), &mut rec) {
-            let direction = random_hemisphere_vector(&mut self.rng, &rec.normal);
-            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), world);
+        if world.hit(r, Interval::right_open(0.001), &mut rec) {
+            let direction = rec.normal + random_unit_sphere_vector(&mut self.rng);
+            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), depth - 1, world);
         }
 
         let unit_direction = r.direction();
@@ -99,7 +105,7 @@ impl Camera {
         Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
     }
 
-    fn get_ray(&self, i: i32, j: i32) -> Ray {
+    fn get_ray(&self, i: u32, j: u32) -> Ray {
         let pixel_center =
             self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
         let pixel_sample = pixel_center + self.pixel_sample_square();
