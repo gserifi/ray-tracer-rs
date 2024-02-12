@@ -1,11 +1,14 @@
+use rand::prelude::*;
+
 use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::utils::random;
 use crate::vec3::{Point3, Vec3, XYZAccessor};
 
-pub struct Camera {
+pub struct Camera<'a> {
+    rng: &'a mut ThreadRng,
+
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
@@ -18,9 +21,10 @@ pub struct Camera {
     pixel_delta_v: Vec3,
 }
 
-impl Camera {
-    pub fn new() -> Self {
+impl<'a> Camera<'a> {
+    pub fn new(rng: &'a mut ThreadRng) -> Self {
         Self {
+            rng,
             aspect_ratio: 16.0 / 9.0,
             image_width: 100,
             samples_per_pixel: 10,
@@ -35,7 +39,7 @@ impl Camera {
     }
 }
 
-impl Camera {
+impl Camera<'_> {
     pub fn render(&mut self, world: &impl Hittable) {
         self.initialize();
 
@@ -103,8 +107,8 @@ impl Camera {
     }
 
     fn pixel_sample_square(&self) -> Vec3 {
-        let px = -0.5 + random();
-        let py = -0.5 + random();
+        let px = -0.5 + random::<f64>();
+        let py = -0.5 + random::<f64>();
 
         px * self.pixel_delta_u + py * self.pixel_delta_v
     }

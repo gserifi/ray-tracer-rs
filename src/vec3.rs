@@ -1,5 +1,8 @@
 extern crate nalgebra as na;
+
 use na::Vector3 as _Vector3;
+use rand::prelude::*;
+use std::f64::consts::PI;
 
 pub type Vec3 = _Vector3<f64>;
 pub type Point3 = _Vector3<f64>;

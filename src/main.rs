@@ -1,3 +1,5 @@
+use rand::prelude::*;
+
 mod camera;
 mod color;
 mod hittable;
@@ -14,6 +16,9 @@ use crate::sphere::Sphere;
 use crate::vec3::{Point3, XYZAccessor};
 
 fn main() {
+    // Random Number Generator
+    let mut rng = thread_rng();
+
     // World
 
     let mut world = HittableList::new();
@@ -23,7 +28,7 @@ fn main() {
 
     // Camera
 
-    let mut cam = Camera::new();
+    let mut cam = Camera::new(&mut rng);
     cam.image_width = 1920;
     cam.samples_per_pixel = 100;
 
