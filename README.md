@@ -7,9 +7,9 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 
 ### Latest Render
 
-![Latest Render](./renders/latest.jpg)
+![Latest Render](./renders/latest.png)
 
-### Ray Tracing in One Weekend <sup>[[1]](#resources)</sup>
+### Ray Tracing in One Weekend <sup>[[1]](#references)</sup>
 - [x] 1 Overview
 - [x] 2 Output an Image
 - [x] 3 The vec3 Class
@@ -25,7 +25,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [ ] 13 Defocus Blur
 - [ ] 14 Where Next?
 
-### Ray Tracing: The Next Week <sup>[[2]](#resources)</sup>
+### Ray Tracing: The Next Week <sup>[[2]](#references)</sup>
 - [ ] 1 Overview
 - [ ] 2 Motion Blur
 - [ ] 3 Bounding Volume Hierarchies
@@ -37,7 +37,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [ ] 9 Volumes
 - [ ] 10 A Scene Testing All New Features
 
-### Ray Tracing: The Rest of Your Life <sup>[[3]](#resources)</sup>
+### Ray Tracing: The Rest of Your Life <sup>[[3]](#references)</sup>
 - [ ] 1 Overview
 - [ ] 2 A Simple Monte Carlo Program
 - [ ] 3 One Dimensional Monte Carlo Integration

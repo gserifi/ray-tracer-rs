@@ -24,7 +24,10 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
+    // 8K: 7680 x 4320, 4K: 3840 x 2160, FullHD: 1920 x 1080
     cam.image_width = 1080;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
 
     cam.render(&world);
 }

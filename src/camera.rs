@@ -1,4 +1,6 @@
+use image::{ImageBuffer, RgbImage};
 use rand::prelude::*;
+use std::path::Path;
 
 use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
@@ -45,8 +47,7 @@ impl Camera {
 impl Camera {
     pub fn render(&mut self, world: &impl Hittable) {
         self.initialize();
-
-        println!("P3\n{} {}\n{}", self.image_width, self.image_height, 255);
+        let mut output_image: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
 
         for j in 0..self.image_height {
             for i in 0..self.image_width {
@@ -57,7 +58,10 @@ impl Camera {
                     let r = self.get_ray(i, j);
                     pixel_color += self.ray_color(&r, self.max_depth, world);
                 }
-                println!("{}", pixel_color.write_color(self.samples_per_pixel));
+
+                pixel_color /= self.samples_per_pixel as f64;
+
+                output_image.put_pixel(i, j, pixel_color.to_rgb());
             }
 
             eprint!(
@@ -65,6 +69,9 @@ impl Camera {
                 (j as f64 / (self.image_height - 1) as f64) * 100.0
             );
         }
+
+        let path = Path::new("images/output.png");
+        output_image.save(path).unwrap();
         eprintln!("\rDone.                                  \n");
     }
 
