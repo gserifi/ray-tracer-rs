@@ -7,7 +7,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 
 ### Latest Render
 
-![Latest Render](./latest.jpg)
+![Latest Render](./renders/latest.jpg)
 
 ### Ray Tracing in One Weekend <sup>[[1]](#resources)</sup>
 - [x] 1 Overview

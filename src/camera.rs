@@ -4,10 +4,11 @@ use crate::color::{Color, ColorWriter};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
+use crate::utils::random_hemisphere_vector;
 use crate::vec3::{Point3, Vec3, XYZAccessor};
 
-pub struct Camera<'a> {
-    rng: &'a mut ThreadRng,
+pub struct Camera {
+    rng: ThreadRng,
 
     pub aspect_ratio: f64,
     pub image_width: i32,
@@ -21,10 +22,10 @@ pub struct Camera<'a> {
     pixel_delta_v: Vec3,
 }
 
-impl<'a> Camera<'a> {
-    pub fn new(rng: &'a mut ThreadRng) -> Self {
+impl Camera {
+    pub fn new() -> Self {
         Self {
-            rng,
+            rng: thread_rng(),
             aspect_ratio: 16.0 / 9.0,
             image_width: 100,
             samples_per_pixel: 10,
@@ -39,7 +40,7 @@ impl<'a> Camera<'a> {
     }
 }
 
-impl Camera<'_> {
+impl Camera {
     pub fn render(&mut self, world: &impl Hittable) {
         self.initialize();
 
@@ -52,7 +53,7 @@ impl Camera<'_> {
                 // Super Sampling
                 for _ in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += Camera::ray_color(&r, world);
+                    pixel_color += self.ray_color(&r, world);
                 }
                 println!("{}", pixel_color.write_color(self.samples_per_pixel));
             }
@@ -86,10 +87,11 @@ impl Camera<'_> {
         self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
     }
 
-    fn ray_color(r: &Ray, world: &impl Hittable) -> Color {
+    fn ray_color(&mut self, r: &Ray, world: &impl Hittable) -> Color {
         let mut rec = HitRecord::empty();
         if world.hit(r, Interval::right_open(0.0), &mut rec) {
-            return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+            let direction = random_hemisphere_vector(&mut self.rng, &rec.normal);
+            return 0.5 * self.ray_color(&Ray::new(rec.p, direction), world);
         }
 
         let unit_direction = r.direction();
