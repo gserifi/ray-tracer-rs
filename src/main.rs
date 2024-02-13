@@ -25,10 +25,10 @@ use crate::RenderMode::{Dev, Latest};
 fn render(render_mode: RenderMode) -> RgbImage {
     let mut world = HittableList::new();
 
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(1.0, 0.4, 0.2))) as Rc<dyn Material>;
+    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.03, 0.03, 0.03))) as Rc<dyn Material>;
     let material_center = Rc::new(Dielectric::new(1.5)) as Rc<dyn Material>;
-    let material_left = Rc::new(Lambertian::new(Vec3::new(0.1, 0.82, 0.59))) as Rc<dyn Material>;
-    let material_right = Rc::new(Metal::new(Vec3::new(0.83, 0.69, 0.22), 0.0)) as Rc<dyn Material>;
+    let material_left = Rc::new(Lambertian::new(Vec3::new(0.8, 0.9, 1.0))) as Rc<dyn Material>;
+    let material_right = Rc::new(Metal::new(Vec3::new(0.95, 0.95, 0.95), 0.0)) as Rc<dyn Material>;
 
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
@@ -79,7 +79,7 @@ fn render(render_mode: RenderMode) -> RgbImage {
         }
         Latest => {
             cam.image_width = 3840;
-            cam.samples_per_pixel = 30;
+            cam.samples_per_pixel = 100;
             cam.max_depth = 60;
         }
     }
