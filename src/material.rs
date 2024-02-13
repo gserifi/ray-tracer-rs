@@ -2,8 +2,7 @@ use rand::prelude::*;
 
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use crate::utils::random_unit_sphere_vector;
-use crate::vec3::{near_zero, reflect, refract, Vec3};
+use crate::vec3::{near_zero, random_unit_sphere_vector, reflect, refract, Vec3};
 
 pub trait Material {
     fn scatter(

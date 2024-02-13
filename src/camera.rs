@@ -7,8 +7,7 @@ use crate::color::{color_to_rgb8, linear_to_gamma, Color};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::utils::random_unit_sphere_vector;
-use crate::vec3::{Point3, Vec3, XYZAccessor};
+use crate::vec3::{random_unit_disk_vector, random_unit_sphere_vector, Point3, Vec3, XYZAccessor};
 
 pub struct Camera {
     rng: ThreadRng,
@@ -17,10 +16,14 @@ pub struct Camera {
     pub image_width: u32,
     pub samples_per_pixel: u32,
     pub max_depth: u32,
+
     pub vertical_fov: f64,
     pub look_from: Point3,
     pub look_at: Point3,
     pub view_up: Vec3,
+
+    pub depth_of_field_angle: f64,
+    pub focus_dist: f64,
 
     // Derived
     image_height: u32,
@@ -28,9 +31,13 @@ pub struct Camera {
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+
     u: Vec3,
     v: Vec3,
     w: Vec3,
+
+    depth_of_field_disk_u: Vec3,
+    depth_of_field_disk_v: Vec3,
 }
 
 impl Camera {
@@ -41,10 +48,14 @@ impl Camera {
             image_width: 100,
             samples_per_pixel: 100,
             max_depth: 50,
+
             vertical_fov: 90.0,
             look_from: Point3::new(0.0, 0.0, 0.0),
             look_at: Point3::new(0.0, 0.0, -1.0),
             view_up: Vec3::new(0.0, 1.0, 0.0),
+
+            depth_of_field_angle: 0.0,
+            focus_dist: 1.0,
 
             // Derived
             image_height: 0,
@@ -52,14 +63,49 @@ impl Camera {
             pixel00_loc: Point3::zeros(),
             pixel_delta_u: Vec3::zeros(),
             pixel_delta_v: Vec3::zeros(),
+
             u: Vec3::zeros(),
             v: Vec3::zeros(),
             w: Vec3::zeros(),
+
+            depth_of_field_disk_u: Vec3::zeros(),
+            depth_of_field_disk_v: Vec3::zeros(),
         }
     }
 }
 
 impl Camera {
+    fn initialize(&mut self) {
+        self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
+        self.origin = self.look_from;
+
+        let theta = self.vertical_fov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * self.focus_dist;
+        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
+
+        // Orthonormal Basis
+        self.w = (self.look_from - self.look_at).normalize();
+        self.u = self.view_up.cross(&self.w).normalize();
+        self.v = self.w.cross(&self.u);
+
+        // Viewport Vectors
+        let viewport_u = viewport_width * self.u;
+        let viewport_v = viewport_height * -self.v;
+
+        self.pixel_delta_u = viewport_u / self.image_width as f64;
+        self.pixel_delta_v = viewport_v / self.image_height as f64;
+
+        let viewport_upper_left =
+            self.origin - (self.focus_dist * self.w) - (viewport_u / 2.0) - (viewport_v / 2.0);
+        self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
+
+        let depth_of_field_radius =
+            self.focus_dist * (self.depth_of_field_angle / 2.0).to_radians().tan();
+        self.depth_of_field_disk_u = depth_of_field_radius * self.u;
+        self.depth_of_field_disk_v = depth_of_field_radius * self.v;
+    }
+
     pub fn render(&mut self, world: &impl Hittable) -> RgbImage {
         self.initialize();
         let mut output_image: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
@@ -82,33 +128,6 @@ impl Camera {
         }
 
         output_image
-    }
-
-    fn initialize(&mut self) {
-        self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
-        self.origin = self.look_from;
-
-        let focal_length = (self.look_from - self.look_at).norm();
-        let theta = self.vertical_fov.to_radians();
-        let h = (theta / 2.0).tan();
-        let viewport_height = 2.0 * h * focal_length;
-        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
-
-        // Orthonormal Basis
-        self.w = (self.look_from - self.look_at).normalize();
-        self.u = self.view_up.cross(&self.w).normalize();
-        self.v = self.w.cross(&self.u);
-
-        // Viewport Vectors
-        let viewport_u = viewport_width * self.u;
-        let viewport_v = viewport_height * -self.v;
-
-        self.pixel_delta_u = viewport_u / self.image_width as f64;
-        self.pixel_delta_v = viewport_v / self.image_height as f64;
-
-        let viewport_upper_left =
-            self.origin - (focal_length * self.w) - (viewport_u / 2.0) - (viewport_v / 2.0);
-        self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
     }
 
     fn ray_color(&mut self, r: &Ray, depth: u32, world: &impl Hittable) -> Color {
@@ -136,13 +155,24 @@ impl Camera {
         Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
     }
 
-    fn get_ray(&self, i: u32, j: u32) -> Ray {
+    fn get_ray(&mut self, i: u32, j: u32) -> Ray {
         let pixel_center =
             self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
         let pixel_sample = pixel_center + self.pixel_sample_square();
-        let ray_direction = pixel_sample - self.origin;
 
-        Ray::new(self.origin, ray_direction)
+        let ray_origin = if self.depth_of_field_angle > 0.0 {
+            self.depth_of_field_disk_sample()
+        } else {
+            self.origin
+        };
+        let ray_direction = pixel_sample - ray_origin;
+
+        Ray::new(ray_origin, ray_direction)
+    }
+
+    fn depth_of_field_disk_sample(&mut self) -> Point3 {
+        let p = random_unit_disk_vector(&mut self.rng);
+        self.origin + (self.depth_of_field_disk_u * p.x()) + (self.depth_of_field_disk_v * p.y())
     }
 
     fn pixel_sample_square(&self) -> Vec3 {
