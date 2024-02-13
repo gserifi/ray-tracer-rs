@@ -21,7 +21,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [x] 9 Diffuse Materials
 - [x] 10 Metal
 - [x] 11 Dielectrics
-- [ ] 12 Positionable Camera
+- [x] 12 Positionable Camera
 - [ ] 13 Defocus Blur
 - [ ] 14 Where Next?
 
