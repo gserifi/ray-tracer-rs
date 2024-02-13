@@ -17,7 +17,7 @@ pub struct Camera {
     pub image_width: u32,
     pub samples_per_pixel: u32,
     pub max_depth: u32,
-    pub focal_length: f64,
+    pub vertical_fov: f64,
 
     // Derived
     image_height: u32,
@@ -35,7 +35,7 @@ impl Camera {
             image_width: 100,
             samples_per_pixel: 100,
             max_depth: 50,
-            focal_length: 1.0,
+            vertical_fov: 90.0,
 
             // Derived
             image_height: 0,
@@ -74,11 +74,13 @@ impl Camera {
 
     fn initialize(&mut self) {
         self.image_height = (self.image_width as f64 / self.aspect_ratio) as u32;
-
-        let viewport_height = 2.0;
-        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
-
         let camera_origin = Vec3::zeros();
+
+        let focal_length = 1.0;
+        let theta = self.vertical_fov.to_radians();
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
+        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
         // Viewport Vectors
         let viewport_u = Vec3::new(viewport_width, 0.0, 0.0);
@@ -87,10 +89,8 @@ impl Camera {
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
-        let viewport_upper_left = camera_origin
-            - Vec3::new(0.0, 0.0, self.focal_length)
-            - viewport_u / 2.0
-            - viewport_v / 2.0;
+        let viewport_upper_left =
+            camera_origin - Vec3::new(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
         self.pixel00_loc = viewport_upper_left + (self.pixel_delta_u + self.pixel_delta_v) / 2.0;
     }
 

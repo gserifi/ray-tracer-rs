@@ -59,19 +59,18 @@ fn render(render_mode: RenderMode) -> RgbImage {
     // Camera
 
     let mut cam = Camera::new();
+    cam.vertical_fov = 60.0;
 
     match render_mode {
         Dev => {
             cam.image_width = 1080;
-            cam.samples_per_pixel = 12;
-            cam.max_depth = 50;
-            cam.focal_length = 1.0;
+            cam.samples_per_pixel = 15;
+            cam.max_depth = 30;
         }
         Latest => {
             cam.image_width = 3840;
             cam.samples_per_pixel = 25;
             cam.max_depth = 50;
-            cam.focal_length = 1.0;
         }
     }
 
@@ -102,7 +101,7 @@ fn main() {
     };
 
     let (tx, rx) = mpsc::channel();
-    let n_threads = 10;
+    let n_threads = 8;
 
     for _ in 0..n_threads {
         let tx = tx.clone();
