@@ -1,4 +1,4 @@
-use image::{ImageBuffer, RgbImage};
+use image::{ImageBuffer, Pixel, Rgb, RgbImage};
 use rand::prelude::*;
 use std::path::Path;
 use tqdm::tqdm;
@@ -48,7 +48,7 @@ impl Camera {
 }
 
 impl Camera {
-    pub fn render(&mut self, world: &impl Hittable, path: &Path) {
+    pub fn render(&mut self, world: &impl Hittable) -> RgbImage {
         self.initialize();
         let mut output_image: RgbImage = ImageBuffer::new(self.image_width, self.image_height);
 
@@ -63,14 +63,13 @@ impl Camera {
                 }
 
                 pixel_color /= self.samples_per_pixel as f64;
-                pixel_color = linear_to_gamma(&pixel_color);
+                // pixel_color = linear_to_gamma(&pixel_color);
 
                 output_image.put_pixel(i, j, color_to_rgb8(&pixel_color));
             }
         }
 
-        output_image.save(path).unwrap();
-        println!("\rDone.                                  \n");
+        output_image
     }
 
     fn initialize(&mut self) {
@@ -134,5 +133,24 @@ impl Camera {
         let py = -0.5 + random::<f64>();
 
         px * self.pixel_delta_u + py * self.pixel_delta_v
+    }
+}
+
+impl Camera {
+    pub fn aggregate(base_image: &mut RgbImage, images: &Vec<RgbImage>) {
+        for (x, y, pixel) in tqdm(base_image.enumerate_pixels_mut()) {
+            let mut color = Color::new(0.0, 0.0, 0.0);
+            for image in images {
+                let pixel_color = image.get_pixel(x, y);
+                color += Color::new(
+                    pixel_color[0] as f64 / 255.0,
+                    pixel_color[1] as f64 / 255.0,
+                    pixel_color[2] as f64 / 255.0,
+                ) / images.len() as f64;
+            }
+
+            color = linear_to_gamma(&color);
+            *pixel = color_to_rgb8(&color);
+        }
     }
 }

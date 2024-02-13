@@ -35,7 +35,7 @@ impl Material for Lambertian {
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
-        let mut scatter_direction = rec.normal + crate::utils::random_unit_sphere_vector(rng);
+        let mut scatter_direction = rec.normal + random_unit_sphere_vector(rng);
 
         if near_zero(&scatter_direction) {
             scatter_direction = rec.normal;

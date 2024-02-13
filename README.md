@@ -25,6 +25,10 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [ ] 13 Defocus Blur
 - [ ] 14 Where Next?
 
+#### Follow Up
+- [x] Multithreading
+- [ ] De-noising
+
 ### Ray Tracing: The Next Week <sup>[[2]](#references)</sup>
 - [ ] 1 Overview
 - [ ] 2 Motion Blur

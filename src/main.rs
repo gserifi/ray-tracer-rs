@@ -1,6 +1,9 @@
+use image::RgbImage;
 use std::env;
 use std::path::Path;
 use std::rc::Rc;
+use std::sync::mpsc;
+use std::thread;
 
 mod camera;
 mod color;
@@ -17,11 +20,9 @@ use crate::hittable::HittableList;
 use crate::material::{Dielectric, Lambertian, Material, Metal};
 use crate::sphere::Sphere;
 use crate::vec3::{Point3, Vec3};
+use crate::RenderMode::{Dev, Latest};
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    // World
-
+fn render(render_mode: RenderMode) -> RgbImage {
     let mut world = HittableList::new();
 
     let material_ground = Rc::new(Lambertian::new(Vec3::new(0.4, 0.4, 0.5))) as Rc<dyn Material>;
@@ -58,23 +59,64 @@ fn main() {
     // Camera
 
     let mut cam = Camera::new();
-    let output_path: &Path;
 
-    if &args[1] == "dev" {
-        cam.image_width = 1080;
-        cam.samples_per_pixel = 100;
-        cam.max_depth = 50;
-        cam.focal_length = 1.0;
-        output_path = Path::new("images/output.png");
-    } else if &args[1] == "latest" {
-        cam.image_width = 3840;
-        cam.samples_per_pixel = 200;
-        cam.max_depth = 50;
-        cam.focal_length = 1.0;
-        output_path = Path::new("latest.png");
-    } else {
-        panic!("Invalid argument");
+    match render_mode {
+        Dev => {
+            cam.image_width = 1080;
+            cam.samples_per_pixel = 12;
+            cam.max_depth = 50;
+            cam.focal_length = 1.0;
+        }
+        Latest => {
+            cam.image_width = 3840;
+            cam.samples_per_pixel = 25;
+            cam.max_depth = 50;
+            cam.focal_length = 1.0;
+        }
     }
 
-    cam.render(&world, output_path);
+    cam.render(&world)
+}
+
+#[derive(Clone)]
+enum RenderMode {
+    Dev,
+    Latest,
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let render_mode = if args.len() > 1 {
+        match args[1].as_str() {
+            "dev" => Dev,
+            "latest" => Latest,
+            _ => panic!("Invalid argument"),
+        }
+    } else {
+        Dev
+    };
+
+    let output_path = match render_mode {
+        Dev => Path::new("images/output.png"),
+        Latest => Path::new("latest.png"),
+    };
+
+    let (tx, rx) = mpsc::channel();
+    let n_threads = 10;
+
+    for _ in 0..n_threads {
+        let tx = tx.clone();
+        let render_mode = render_mode.clone();
+        thread::spawn(move || {
+            let image = render(render_mode);
+            tx.send(image).unwrap();
+        });
+    }
+
+    let images: Vec<_> = rx.iter().take(n_threads).collect();
+
+    let mut output_image: RgbImage = RgbImage::new(images[0].width(), images[0].height());
+
+    Camera::aggregate(&mut output_image, &images);
+    output_image.save(output_path).unwrap();
 }
