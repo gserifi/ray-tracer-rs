@@ -25,33 +25,37 @@ use crate::RenderMode::{Dev, Latest};
 fn render(render_mode: RenderMode) -> RgbImage {
     let mut world = HittableList::new();
 
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.4, 0.4, 0.5))) as Rc<dyn Material>;
-    let material_center = Rc::new(Dielectric::new(1.5)) as Rc<dyn Material>;
-    let material_left = Rc::new(Metal::new(Vec3::new(0.8, 0.3, 0.3), 0.02)) as Rc<dyn Material>;
-    let material_right = Rc::new(Metal::new(Vec3::new(0.3, 0.3, 0.8), 0.3)) as Rc<dyn Material>;
+    let material_ground = Rc::new(Lambertian::new(Vec3::new(1.0, 0.4, 0.2))) as Rc<dyn Material>;
+    let material_center = Rc::new(Lambertian::new(Vec3::new(0.1, 0.82, 0.59))) as Rc<dyn Material>;
+    let material_left = Rc::new(Dielectric::new(1.5)) as Rc<dyn Material>;
+    let material_right = Rc::new(Metal::new(Vec3::new(0.83, 0.69, 0.22), 0.0)) as Rc<dyn Material>;
 
     world.add(Box::new(Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
         100.0,
         Rc::clone(&material_ground),
     )));
+
     world.add(Box::new(Sphere::new(
-        Point3::new(0.0, 0.05, -0.9),
+        Point3::new(0.0, 0.0, -1.0),
         0.5,
         Rc::clone(&material_center),
     )));
+
     world.add(Box::new(Sphere::new(
-        Point3::new(0.0, 0.05, -0.9),
-        -0.4,
-        Rc::clone(&material_center),
-    )));
-    world.add(Box::new(Sphere::new(
-        Point3::new(-0.75, 0.3, -1.6),
+        Point3::new(-1.01, 0.0, -1.0),
         0.5,
         Rc::clone(&material_left),
     )));
+
     world.add(Box::new(Sphere::new(
-        Point3::new(0.75, 0.0, -1.6),
+        Point3::new(-1.01, 0.0, -1.0),
+        -0.4,
+        Rc::clone(&material_left),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
         0.5,
         Rc::clone(&material_right),
     )));
@@ -59,7 +63,10 @@ fn render(render_mode: RenderMode) -> RgbImage {
     // Camera
 
     let mut cam = Camera::new();
-    cam.vertical_fov = 60.0;
+    cam.vertical_fov = 30.0;
+    cam.look_from = Point3::new(-2.0, 2.0, 1.0);
+    cam.look_at = Point3::new(0.0, 0.0, -1.0);
+    cam.view_up = Vec3::new(0.0, 1.0, 0.0);
 
     match render_mode {
         Dev => {
