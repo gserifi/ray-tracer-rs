@@ -1,5 +1,4 @@
-use crate::interval::Interval;
-pub use crate::vec3::{Vec3, Vec3Ext};
+pub use crate::utils::{Interval, Vec3, Vec3Ext};
 use image::Rgb;
 
 pub type Color = Vec3;

@@ -1,4 +1,4 @@
-use crate::vec3::{Point3, Vec3};
+use crate::utils::{Point3, Vec3};
 
 #[derive(Debug)]
 pub struct Ray {
@@ -6,7 +6,6 @@ pub struct Ray {
     direction: Vec3,
 }
 
-// Constructors
 impl Ray {
     pub fn new(origin: Point3, direction: Vec3) -> Ray {
         Ray {
@@ -16,7 +15,6 @@ impl Ray {
     }
 }
 
-// Accessors
 impl Ray {
     pub fn origin(&self) -> Vec3 {
         self.origin
@@ -27,7 +25,6 @@ impl Ray {
     }
 }
 
-// Methods
 impl Ray {
     pub fn at(&self, t: f64) -> Point3 {
         self.origin + self.direction * t

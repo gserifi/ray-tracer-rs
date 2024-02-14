@@ -1,12 +1,11 @@
 use image::{ImageBuffer, RgbImage};
-use rand::prelude::*;
+use rand::prelude::ThreadRng;
+use rand::{thread_rng, Rng};
 use tqdm::tqdm;
 
-use crate::color::{Color, ColorExt};
-use crate::hittable::{HitRecord, Hittable};
-use crate::interval::Interval;
-use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3, Vec3Ext};
+use crate::geometry::{HitRecord, Hittable};
+use crate::optics::{LensConfig, Ray, RenderOutputConfig, ViewportConfig};
+use crate::utils::{Color, ColorExt, Interval, Point3, Vec3, Vec3Ext};
 
 pub struct Camera {
     rng: ThreadRng,
@@ -40,21 +39,25 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
+    pub fn new(
+        render_output_config: RenderOutputConfig,
+        viewport_config: ViewportConfig,
+        lens_config: LensConfig,
+    ) -> Self {
         Self {
             rng: thread_rng(),
-            aspect_ratio: 16.0 / 9.0,
-            image_width: 100,
-            samples_per_pixel: 100,
-            max_depth: 50,
+            aspect_ratio: render_output_config.aspect_ratio,
+            image_width: render_output_config.image_width,
+            samples_per_pixel: render_output_config.samples_per_pixel,
+            max_depth: render_output_config.max_depth,
 
-            vertical_fov: 90.0,
-            look_from: Point3::new(0.0, 0.0, 0.0),
-            look_at: Point3::new(0.0, 0.0, -1.0),
-            view_up: Vec3::new(0.0, 1.0, 0.0),
+            vertical_fov: viewport_config.vertical_fov,
+            look_from: viewport_config.look_from,
+            look_at: viewport_config.look_at,
+            view_up: viewport_config.view_up,
 
-            depth_of_field_angle: 0.0,
-            focus_dist: 1.0,
+            depth_of_field_angle: lens_config.depth_of_field_angle,
+            focus_dist: lens_config.focus_dist,
 
             // Derived
             image_height: 0,
@@ -70,6 +73,16 @@ impl Camera {
             depth_of_field_disk_u: Vec3::zeros(),
             depth_of_field_disk_v: Vec3::zeros(),
         }
+    }
+}
+
+impl Default for Camera {
+    fn default() -> Self {
+        Self::new(
+            RenderOutputConfig::default(),
+            ViewportConfig::default(),
+            LensConfig::default(),
+        )
     }
 }
 
@@ -132,7 +145,7 @@ impl Camera {
             return Color::zeros();
         }
 
-        let mut rec = HitRecord::empty();
+        let mut rec = HitRecord::default();
         if world.hit(r, Interval::right_open(0.001), &mut rec) {
             let mut scattered = Ray::new(Point3::zeros(), Vec3::new(1.0, 0.0, 0.0));
             let mut attenuation = Color::zeros();
@@ -172,9 +185,9 @@ impl Camera {
         self.origin + (self.depth_of_field_disk_u * p.x()) + (self.depth_of_field_disk_v * p.y())
     }
 
-    fn pixel_sample_square(&self) -> Vec3 {
-        let px = -0.5 + random::<f64>();
-        let py = -0.5 + random::<f64>();
+    fn pixel_sample_square(&mut self) -> Vec3 {
+        let px = -0.5 + self.rng.gen::<f64>();
+        let py = -0.5 + self.rng.gen::<f64>();
 
         px * self.pixel_delta_u + py * self.pixel_delta_v
     }

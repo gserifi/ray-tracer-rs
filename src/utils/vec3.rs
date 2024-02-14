@@ -1,7 +1,7 @@
 extern crate nalgebra as na;
 
 use na::Vector3 as _Vector3;
-use rand::prelude::*;
+use rand::prelude::{Rng, ThreadRng};
 use rand_distr::StandardNormal;
 use std::ops::Index;
 

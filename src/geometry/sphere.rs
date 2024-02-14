@@ -1,9 +1,9 @@
-use crate::hittable::{HitRecord, Hittable};
-use crate::interval::Interval;
-use crate::material::Material;
-use crate::ray::Ray;
-use crate::vec3::Point3;
 use std::rc::Rc;
+
+use crate::geometry::{HitRecord, Hittable};
+use crate::materials::{Lambertian, Material};
+use crate::optics::Ray;
+use crate::utils::{Interval, Point3};
 
 pub struct Sphere {
     center: Point3,
@@ -21,6 +21,16 @@ impl Sphere {
     }
 }
 
+impl Default for Sphere {
+    fn default() -> Self {
+        Self::new(
+            Point3::new(0.0, 0.0, -1.0),
+            0.5,
+            Rc::new(Lambertian::default()),
+        )
+    }
+}
+
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - self.center;
@@ -35,7 +45,6 @@ impl Hittable for Sphere {
 
         let sqrtd = discriminant.sqrt();
 
-        // Find the nearest root that lies in the acceptable range.
         let mut root = (-half_b - sqrtd) / a;
         if !t.surrounds(root) {
             root = (-half_b + sqrtd) / a;
