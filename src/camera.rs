@@ -1,13 +1,12 @@
-use image::{ImageBuffer, Pixel, Rgb, RgbImage};
+use image::{ImageBuffer, RgbImage};
 use rand::prelude::*;
-use std::path::Path;
 use tqdm::tqdm;
 
-use crate::color::{color_to_rgb8, linear_to_gamma, Color};
+use crate::color::{Color, ColorExt};
 use crate::hittable::{HitRecord, Hittable};
 use crate::interval::Interval;
 use crate::ray::Ray;
-use crate::vec3::{random_unit_disk_vector, random_unit_sphere_vector, Point3, Vec3, XYZAccessor};
+use crate::vec3::{Point3, Vec3, Vec3Ext};
 
 pub struct Camera {
     rng: ThreadRng,
@@ -121,9 +120,7 @@ impl Camera {
                 }
 
                 pixel_color /= self.samples_per_pixel as f64;
-                // pixel_color = linear_to_gamma(&pixel_color);
-
-                output_image.put_pixel(i, j, color_to_rgb8(&pixel_color));
+                output_image.put_pixel(i, j, pixel_color.to_rgb8());
             }
         }
 
@@ -171,7 +168,7 @@ impl Camera {
     }
 
     fn depth_of_field_disk_sample(&mut self) -> Point3 {
-        let p = random_unit_disk_vector(&mut self.rng);
+        let p = Vec3::random_unit_disk_vector(&mut self.rng);
         self.origin + (self.depth_of_field_disk_u * p.x()) + (self.depth_of_field_disk_v * p.y())
     }
 
@@ -196,8 +193,8 @@ impl Camera {
                 ) / images.len() as f64;
             }
 
-            color = linear_to_gamma(&color);
-            *pixel = color_to_rgb8(&color);
+            color = color.linear_to_gamma();
+            *pixel = color.to_rgb8();
         }
     }
 }

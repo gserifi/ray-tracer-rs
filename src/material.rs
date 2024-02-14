@@ -2,7 +2,7 @@ use rand::prelude::*;
 
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use crate::vec3::{near_zero, random_unit_sphere_vector, reflect, refract, Vec3};
+use crate::vec3::{Vec3, Vec3Ext};
 
 pub trait Material {
     fn scatter(
@@ -34,9 +34,9 @@ impl Material for Lambertian {
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
-        let mut scatter_direction = rec.normal + random_unit_sphere_vector(rng);
+        let mut scatter_direction = rec.normal + Vec3::random_unit_sphere_vector(rng);
 
-        if near_zero(&scatter_direction) {
+        if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
 
@@ -69,10 +69,10 @@ impl Material for Metal {
         attenuation: &mut Vec3,
         scattered: &mut Ray,
     ) -> bool {
-        let reflected = reflect(&r_in.direction(), &rec.normal);
+        let reflected = r_in.direction().reflect(&rec.normal);
         *scattered = Ray::new(
             rec.p,
-            reflected + self.fuzz * random_unit_sphere_vector(&mut thread_rng()),
+            reflected + self.fuzz * Vec3::random_unit_sphere_vector(&mut thread_rng()),
         );
         *attenuation = self.albedo;
 
@@ -122,9 +122,9 @@ impl Material for Dielectric {
         let direction = if cannot_refract
             || Self::reflectance(cos_theta, refraction_ratio) > rng.gen::<f64>()
         {
-            reflect(&r_in.direction(), &rec.normal)
+            r_in.direction().reflect(&rec.normal)
         } else {
-            refract(&r_in.direction(), &rec.normal, refraction_ratio)
+            r_in.direction().refract(&rec.normal, refraction_ratio)
         };
 
         *scattered = Ray::new(rec.p, direction);
