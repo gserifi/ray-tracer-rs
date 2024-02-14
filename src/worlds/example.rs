@@ -24,6 +24,12 @@ pub fn example_world() -> World {
         Rc::clone(&material_center),
     );
 
+    let center_inner_sphere = Sphere::new(
+        Point3::new(0.0, 0.01, -1.0),
+        -0.4,
+        Rc::clone(&material_center),
+    );
+
     let left_sphere = Sphere::new(
         Point3::new(-1.01, 0.0, -1.0),
         0.5,
@@ -40,6 +46,7 @@ pub fn example_world() -> World {
     World::new(vec![
         Box::new(ground),
         Box::new(center_sphere),
+        Box::new(center_inner_sphere),
         Box::new(left_sphere),
         Box::new(right_sphere),
     ])
