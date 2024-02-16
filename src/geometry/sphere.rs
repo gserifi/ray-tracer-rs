@@ -3,12 +3,13 @@ use std::rc::Rc;
 use crate::geometry::{HitRecord, Hittable};
 use crate::materials::{Lambertian, Material};
 use crate::optics::Ray;
-use crate::utils::{Interval, Point3};
+use crate::utils::{Interval, Point3, Vec3};
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
     mat: Rc<dyn Material>,
+    center_vec: Vec3,
 }
 
 impl Sphere {
@@ -17,6 +18,21 @@ impl Sphere {
             center,
             radius,
             mat,
+            center_vec: Vec3::new(0.0, 0.0, 0.0),
+        }
+    }
+
+    pub fn new_moving(
+        center0: Point3,
+        center1: Point3,
+        radius: f64,
+        mat: Rc<dyn Material>,
+    ) -> Self {
+        Self {
+            center: center0,
+            radius,
+            mat,
+            center_vec: center1 - center0,
         }
     }
 }
@@ -31,9 +47,16 @@ impl Default for Sphere {
     }
 }
 
+impl Sphere {
+    pub fn center(&self, time: f64) -> Point3 {
+        self.center + self.center_vec * time
+    }
+}
+
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
-        let oc = r.origin() - self.center;
+        let center = self.center(r.time());
+        let oc = r.origin() - center;
         let a = 1.0; // Note that direction vector is normalized
         let half_b = oc.dot(&r.direction());
         let c = oc.norm_squared() - self.radius * self.radius;
@@ -55,7 +78,7 @@ impl Hittable for Sphere {
 
         rec.t = root;
         rec.p = r.at(rec.t);
-        let outward_normal = (rec.p - self.center) / self.radius;
+        let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(r, outward_normal);
         rec.mat = Rc::clone(&self.mat);
 

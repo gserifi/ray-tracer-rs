@@ -29,8 +29,8 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [x] Multithreading
 
 ### Ray Tracing: The Next Week <sup>[[2]](#references)</sup>
-- [ ] 1 Overview
-- [ ] 2 Motion Blur
+- [x] 1 Overview
+- [x] 2 Motion Blur
 - [ ] 3 Bounding Volume Hierarchies
 - [ ] 4 Texture Mapping
 - [ ] 5 Perlin Noise

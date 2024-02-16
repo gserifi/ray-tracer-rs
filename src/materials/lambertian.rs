@@ -24,7 +24,7 @@ impl Default for Lambertian {
 impl Material for Lambertian {
     fn scatter(
         &self,
-        _r_in: &Ray,
+        r_in: &Ray,
         rec: &HitRecord,
         rng: &mut ThreadRng,
         attenuation: &mut Vec3,
@@ -36,7 +36,7 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
 
-        *scattered = Ray::new(rec.p, scatter_direction);
+        *scattered = Ray::new(rec.p, scatter_direction, r_in.time());
         *attenuation = self.albedo;
         true
     }

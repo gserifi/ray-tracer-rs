@@ -4,40 +4,27 @@ use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
 
-use lib::optics::{Camera, LensConfig, RenderOutputConfig, ViewportConfig};
-use lib::utils::{Point3, Vec3};
-use lib::worlds::example_world;
+use lib::optics::{Camera, RenderOutputConfig};
+use lib::worlds::example_motion_blur;
 
 use RenderMode::{Dev, Latest};
 
 fn render(render_mode: RenderMode) -> RgbImage {
-    let world = example_world();
+    let (world, viewport_config, lens_config) = example_motion_blur();
 
     let render_output_config = match render_mode {
         Dev => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
             image_width: 1080,
-            samples_per_pixel: 15,
+            samples_per_pixel: 25,
             max_depth: 30,
         },
         Latest => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
             image_width: 3840,
-            samples_per_pixel: 100,
+            samples_per_pixel: 50,
             max_depth: 60,
         },
-    };
-
-    let viewport_config = ViewportConfig {
-        vertical_fov: 20.0,
-        look_from: Point3::new(-2.0, 2.0, 1.0),
-        look_at: Point3::new(0.0, 0.0, -1.0),
-        view_up: Vec3::new(0.0, 1.0, 0.0),
-    };
-
-    let lens_config = LensConfig {
-        depth_of_field_angle: 3.0,
-        focus_dist: 3.4,
     };
 
     let mut cam = Camera::new(render_output_config, viewport_config, lens_config);

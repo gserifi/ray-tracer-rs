@@ -38,6 +38,7 @@ impl Material for Metal {
         *scattered = Ray::new(
             rec.p,
             reflected + self.fuzz * Vec3::random_unit_sphere_vector(rng),
+            r_in.time(),
         );
         *attenuation = self.albedo;
 

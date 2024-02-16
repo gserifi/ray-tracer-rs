@@ -147,7 +147,7 @@ impl Camera {
 
         let mut rec = HitRecord::default();
         if world.hit(r, Interval::right_open(0.001), &mut rec) {
-            let mut scattered = Ray::new(Point3::zeros(), Vec3::new(1.0, 0.0, 0.0));
+            let mut scattered = Ray::new(Point3::zeros(), Vec3::zeros(), 0.0);
             let mut attenuation = Color::zeros();
 
             if rec
@@ -176,8 +176,9 @@ impl Camera {
             self.origin
         };
         let ray_direction = pixel_sample - ray_origin;
+        let ray_time = self.rng.gen::<f64>();
 
-        Ray::new(ray_origin, ray_direction)
+        Ray::new(ray_origin, ray_direction, ray_time)
     }
 
     fn depth_of_field_disk_sample(&mut self) -> Point3 {
