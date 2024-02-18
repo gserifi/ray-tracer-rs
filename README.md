@@ -31,7 +31,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 ### Ray Tracing: The Next Week <sup>[[2]](#references)</sup>
 - [x] 1 Overview
 - [x] 2 Motion Blur
-- [ ] 3 Bounding Volume Hierarchies
+- [x] 3 Bounding Volume Hierarchies
 - [ ] 4 Texture Mapping
 - [ ] 5 Perlin Noise
 - [ ] 6 Quadrilaterals
@@ -39,6 +39,9 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [ ] 8 Instances
 - [ ] 9 Volumes
 - [ ] 10 A Scene Testing All New Features
+
+#### Follow Up
+- [ ] Octree
 
 ### Ray Tracing: The Rest of Your Life <sup>[[3]](#references)</sup>
 - [ ] 1 Overview

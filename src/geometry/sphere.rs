@@ -1,15 +1,16 @@
 use std::rc::Rc;
 
-use crate::geometry::{HitRecord, Hittable};
+use crate::geometry::{accel::AABB, HitRecord, Hittable};
 use crate::materials::{Lambertian, Material};
 use crate::optics::Ray;
-use crate::utils::{Interval, Point3, Vec3};
+use crate::utils::{Interval, Point3, Vec3, Vec3Ext};
 
 pub struct Sphere {
     center: Point3,
     radius: f64,
     mat: Rc<dyn Material>,
     center_vec: Vec3,
+    bbox: AABB,
 }
 
 impl Sphere {
@@ -19,6 +20,10 @@ impl Sphere {
             radius,
             mat,
             center_vec: Vec3::new(0.0, 0.0, 0.0),
+            bbox: AABB::wrap_points(
+                &(center - Vec3::constant(radius)),
+                &(center + Vec3::constant(radius)),
+            ),
         }
     }
 
@@ -28,11 +33,15 @@ impl Sphere {
         radius: f64,
         mat: Rc<dyn Material>,
     ) -> Self {
+        let radius_vec = Vec3::constant(radius);
+        let bbox0 = AABB::wrap_points(&(center0 - radius_vec), &(center0 + radius_vec));
+        let bbox1 = AABB::wrap_points(&(center1 - radius_vec), &(center1 + radius_vec));
         Self {
             center: center0,
             radius,
             mat,
             center_vec: center1 - center0,
+            bbox: AABB::wrap_boxes(&bbox0, &bbox1),
         }
     }
 }
@@ -80,8 +89,12 @@ impl Hittable for Sphere {
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(r, outward_normal);
-        rec.mat = Rc::clone(&self.mat);
+        rec.mat = self.mat.clone();
 
         true
+    }
+
+    fn bounding_box(&self) -> &AABB {
+        &self.bbox
     }
 }

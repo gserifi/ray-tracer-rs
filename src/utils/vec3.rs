@@ -35,6 +35,10 @@ where
 
     fn refract(&self, n: &Vec3, etai_over_etat: f64) -> Vec3;
 
+    fn constant(c: f64) -> Vec3 {
+        Vec3::new(c, c, c)
+    }
+
     fn random_uniform_vector(rng: &mut ThreadRng) -> Vec3 {
         Vec3::new(rng.gen(), rng.gen(), rng.gen())
     }
