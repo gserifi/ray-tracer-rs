@@ -5,6 +5,7 @@ use crate::materials::Material;
 use crate::optics::Ray;
 use crate::utils::{Vec3, Vec3Ext};
 
+#[derive(Debug)]
 pub struct Lambertian {
     albedo: Vec3,
 }

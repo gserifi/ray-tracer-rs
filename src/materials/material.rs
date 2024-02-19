@@ -1,10 +1,11 @@
 use rand::prelude::ThreadRng;
+use std::fmt::Debug;
 
 use crate::geometry::HitRecord;
 use crate::optics::Ray;
 use crate::utils::Vec3;
 
-pub trait Material {
+pub trait Material: Debug {
     fn scatter(
         &self,
         r_in: &Ray,

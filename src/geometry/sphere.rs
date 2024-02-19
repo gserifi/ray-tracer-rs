@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::rc::Rc;
 
 use crate::geometry::{accel::AABB, HitRecord, Hittable};
@@ -11,6 +12,12 @@ pub struct Sphere {
     mat: Rc<dyn Material>,
     center_vec: Vec3,
     bbox: AABB,
+}
+
+impl Debug for Sphere {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Sphere").finish()
+    }
 }
 
 impl Sphere {

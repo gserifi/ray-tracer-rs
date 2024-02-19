@@ -16,7 +16,7 @@ pub fn example_performance() -> (World, ViewportConfig, LensConfig) {
         material_ground.clone(),
     );
 
-    let mut objects: Vec<Rc<dyn Hittable>> = vec![Rc::new(ground)];
+    let mut objects: Vec<Rc<dyn Hittable>> = vec![];
 
     for i in -15..=15 {
         for j in -15..=3 {
@@ -30,7 +30,7 @@ pub fn example_performance() -> (World, ViewportConfig, LensConfig) {
     // World
     // let world = World::new(objects);
     let world = BvhNode::from_hittable_list(&World::new(objects));
-    let world = World::new(vec![Rc::new(world)]);
+    let world = World::new(vec![Rc::new(ground), Rc::new(world)]);
 
     let viewport_config = ViewportConfig {
         vertical_fov: 70.0,

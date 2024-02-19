@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 
 use crate::geometry::{Axis, HitRecord, Hittable, HittableList, AABB};
@@ -6,9 +7,25 @@ use crate::optics::Ray;
 use crate::utils::Interval;
 
 pub struct BvhNode {
-    pub left: Rc<dyn Hittable>,
-    pub right: Rc<dyn Hittable>,
+    pub left: Option<Rc<BvhNode>>,
+    pub right: Option<Rc<BvhNode>>,
+    pub leaf: Option<Rc<dyn Hittable>>,
     bbox: AABB,
+}
+
+impl Debug for BvhNode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.leaf.is_some() {
+            f.debug_struct(format!("BvhNode<{}>", self.height()).as_str())
+                .field("leaf", &self.leaf)
+                .finish()
+        } else {
+            f.debug_struct(format!("BvhNode<{}>", self.height()).as_str())
+                .field("left", &self.left)
+                .field("right", &self.right)
+                .finish()
+        }
+    }
 }
 
 impl BvhNode {
@@ -20,35 +37,31 @@ impl BvhNode {
 
         let object_span = end - start;
 
-        let left: Rc<dyn Hittable>;
-        let right: Rc<dyn Hittable>;
+        let mut left: Option<Rc<BvhNode>> = None;
+        let mut right: Option<Rc<BvhNode>> = None;
+        let mut leaf: Option<Rc<dyn Hittable>> = None;
 
         if object_span == 1 {
-            left = objects[start].clone();
-            right = objects[start].clone();
-        } else if object_span == 2 {
-            if comparator(&objects[start], &objects[start + 1]) == Ordering::Less {
-                left = objects[start].clone();
-                right = objects[start + 1].clone();
-            } else {
-                left = objects[start + 1].clone();
-                right = objects[start].clone();
-            }
+            leaf = Some(objects[start].clone());
         } else {
             objects[start..end].sort_by(comparator);
 
             let mid = start + object_span / 2;
-            left = Rc::new(BvhNode::new(&objects, start, mid));
-            right = Rc::new(BvhNode::new(&objects, mid, end));
+            left = Some(Rc::new(BvhNode::new(&objects, start, mid)));
+            right = Some(Rc::new(BvhNode::new(&objects, mid, end)));
         }
 
-        let left_box = left.bounding_box();
-        let right_box = right.bounding_box();
+        let bbox = if let Some(_leaf) = leaf.clone() {
+            *_leaf.as_ref().bounding_box()
+        } else {
+            AABB::wrap_boxes(&left.as_ref().unwrap().bbox, &right.as_ref().unwrap().bbox)
+        };
 
         Self {
-            bbox: AABB::wrap_boxes(left_box, right_box),
             left,
             right,
+            leaf,
+            bbox,
         }
     }
 
@@ -78,8 +91,12 @@ impl Hittable for BvhNode {
             return false;
         }
 
-        let hit_left = self.left.as_ref().hit(r, t, rec);
-        let hit_right = self.right.as_ref().hit(
+        if self.leaf.is_some() {
+            return self.leaf.as_ref().unwrap().hit(r, t, rec);
+        }
+
+        let hit_left = self.left.as_ref().unwrap().hit(r, t, rec);
+        let hit_right = self.right.as_ref().unwrap().hit(
             r,
             Interval::new(t.min, if hit_left { rec.t } else { t.max }),
             rec,
@@ -92,7 +109,16 @@ impl Hittable for BvhNode {
         &self.bbox
     }
 
-    fn depth(&self) -> usize {
-        1 + std::cmp::max(self.left.as_ref().depth(), self.right.as_ref().depth())
+    fn height(&self) -> usize {
+        if self.leaf.is_some() {
+            1
+        } else {
+            1 + self
+                .left
+                .as_ref()
+                .unwrap()
+                .height()
+                .max(self.right.as_ref().unwrap().height())
+        }
     }
 }

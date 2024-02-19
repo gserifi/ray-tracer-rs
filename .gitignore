@@ -23,4 +23,5 @@ Cargo.lock
 
 # == Custom ==
 /images
+/meshes
 .DS_Store
