@@ -39,6 +39,12 @@ where
         Vec3::new(c, c, c)
     }
 
+    fn ones() -> Vec3 {
+        Self::constant(1.0)
+    }
+
+    fn squared(&self) -> Self;
+
     fn random_uniform_vector(rng: &mut ThreadRng) -> Vec3 {
         Vec3::new(rng.gen(), rng.gen(), rng.gen())
     }
@@ -81,5 +87,9 @@ impl Vec3Ext for Vec3 {
         let r_out_perp = etai_over_etat * (self + cos_theta * n);
         let r_out_parallel = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * n;
         r_out_perp + r_out_parallel
+    }
+
+    fn squared(&self) -> Self {
+        self.component_mul(self)
     }
 }

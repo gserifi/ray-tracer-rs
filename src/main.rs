@@ -5,12 +5,12 @@ use std::sync::mpsc;
 use std::thread;
 
 use lib::optics::{Camera, RenderOutputConfig};
-use lib::worlds::example_performance;
+use lib::worlds::example_normal as scene;
 
 use RenderMode::{Dev, Latest};
 
 fn render(render_mode: RenderMode) -> RgbImage {
-    let (world, viewport_config, lens_config) = example_performance();
+    let (world, viewport_config, lens_config) = scene();
 
     let render_output_config = match render_mode {
         Dev => RenderOutputConfig {
