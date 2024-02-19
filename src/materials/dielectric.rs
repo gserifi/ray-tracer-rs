@@ -8,11 +8,21 @@ use crate::utils::{Vec3, Vec3Ext};
 #[derive(Debug)]
 pub struct Dielectric {
     refraction_index: f64,
+    frost: f64,
 }
 
 impl Dielectric {
     pub fn new(refraction_index: f64) -> Self {
-        Self { refraction_index }
+        Self {
+            refraction_index,
+            frost: 0.0,
+        }
+    }
+    pub fn frosted(refraction_index: f64, frost: f64) -> Self {
+        Self {
+            refraction_index,
+            frost: if frost < 1.0 { frost } else { 1.0 },
+        }
     }
 }
 
@@ -59,7 +69,11 @@ impl Material for Dielectric {
             r_in.direction().refract(&rec.normal, refraction_ratio)
         };
 
-        *scattered = Ray::new(rec.p, direction, r_in.time());
+        *scattered = Ray::new(
+            rec.p,
+            direction + self.frost * Vec3::random_unit_sphere_vector(rng),
+            r_in.time(),
+        );
         true
     }
 }

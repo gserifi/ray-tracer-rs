@@ -43,6 +43,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 #### Follow Up
 - [ ] Octree
 - [x] Triangle Meshes
+- [x] Frosted Glass
 
 ### Ray Tracing: The Rest of Your Life <sup>[[3]](#references)</sup>
 - [ ] 1 Overview

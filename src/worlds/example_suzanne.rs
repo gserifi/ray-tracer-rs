@@ -1,14 +1,15 @@
 use std::rc::Rc;
 
 use crate::geometry::{Sphere, TriangleMesh, World};
-use crate::materials::{Metal, Normal};
+use crate::materials::{Dielectric, Metal};
 use crate::optics::{LensConfig, ViewportConfig};
 use crate::utils::{Point3, Vec3};
 
 pub fn example_suzanne() -> (World, ViewportConfig, LensConfig) {
     // Materials
     let material_ground = Rc::new(Metal::new(Vec3::new(0.6, 0.6, 0.8) * 0.7, 0.0));
-    let material_suzanne = Rc::new(Normal::new());
+    // let material_suzanne = Rc::new(Normal::new());
+    let material_suzanne = Rc::new(Dielectric::frosted(1.5, 0.1));
 
     // Objects
     let ground = Sphere::new(
