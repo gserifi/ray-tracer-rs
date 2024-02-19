@@ -1,6 +1,7 @@
+use std::rc::Rc;
+
 use crate::textures::{Solid, Texture};
 use crate::utils::{Color, Vec3, Vec3Ext};
-use std::rc::Rc;
 
 #[derive(Debug)]
 pub struct XYZChecker {

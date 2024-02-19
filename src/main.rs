@@ -16,14 +16,14 @@ fn render(render_mode: RenderMode) -> RgbImage {
         Dev => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
             image_width: 1080,
-            samples_per_pixel: 1,
+            samples_per_pixel: 15,
             max_depth: 30,
         },
         Latest => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
             image_width: 3840,
-            samples_per_pixel: 1,
-            max_depth: 50,
+            samples_per_pixel: 15,
+            max_depth: 30,
         },
     };
 

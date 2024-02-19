@@ -32,7 +32,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [x] 1 Overview
 - [x] 2 Motion Blur
 - [x] 3 Bounding Volume Hierarchies
-- [ ] 4 Texture Mapping
+- [x] 4 Texture Mapping
 - [ ] 5 Perlin Noise
 - [ ] 6 Quadrilaterals
 - [ ] 7 Lights

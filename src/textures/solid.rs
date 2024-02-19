@@ -1,5 +1,5 @@
 use crate::textures::Texture;
-use crate::utils::Color;
+use crate::utils::{Color, Vec3};
 
 #[derive(Debug)]
 pub struct Solid {
@@ -13,7 +13,7 @@ impl Solid {
 }
 
 impl Texture for Solid {
-    fn sample(&self, _: f64, _: f64, _: &crate::utils::Vec3) -> Color {
+    fn sample(&self, _: f64, _: f64, _: &Vec3) -> Color {
         self.color
     }
 }
