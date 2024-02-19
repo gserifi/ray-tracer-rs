@@ -7,8 +7,8 @@ use crate::utils::{Point3, Vec3};
 
 pub fn example_motion_blur() -> (World, ViewportConfig, LensConfig) {
     // Materials
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.1, 0.1, 0.2)));
-    let material_sphere = Rc::new(Lambertian::new(Vec3::new(0.7, 0.1, 0.1)));
+    let material_ground = Rc::new(Lambertian::from_albedo(Vec3::new(0.1, 0.1, 0.2)));
+    let material_sphere = Rc::new(Lambertian::from_albedo(Vec3::new(0.7, 0.1, 0.1)));
 
     // Objects
     let ground = Sphere::new(

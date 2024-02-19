@@ -6,8 +6,8 @@ use crate::optics::{LensConfig, ViewportConfig};
 use crate::utils::{Point3, Vec3};
 
 pub fn example_performance() -> (World, ViewportConfig, LensConfig) {
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.03, 0.03, 0.03)));
-    let material_sphere = Rc::new(Lambertian::new(Vec3::new(0.2, 0.2, 0.7)));
+    let material_ground = Rc::new(Lambertian::from_albedo(Vec3::new(0.03, 0.03, 0.03)));
+    let material_sphere = Rc::new(Lambertian::from_albedo(Vec3::new(0.2, 0.2, 0.7)));
 
     // Objects
     let ground = Sphere::new(

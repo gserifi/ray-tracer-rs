@@ -7,9 +7,9 @@ use crate::utils::{Point3, Vec3};
 
 pub fn example_world() -> (World, ViewportConfig, LensConfig) {
     // Materials
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.03, 0.03, 0.03)));
+    let material_ground = Rc::new(Lambertian::from_albedo(Vec3::new(0.03, 0.03, 0.03)));
     let material_center = Rc::new(Dielectric::new(1.5));
-    let material_left = Rc::new(Lambertian::new(Vec3::new(0.8, 0.9, 1.0)));
+    let material_left = Rc::new(Lambertian::from_albedo(Vec3::new(0.8, 0.9, 1.0)));
     let material_right = Rc::new(Metal::new(Vec3::new(0.95, 0.95, 0.95), 0.0));
 
     // Objects

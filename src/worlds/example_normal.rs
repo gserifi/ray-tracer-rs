@@ -7,7 +7,7 @@ use crate::utils::{Point3, Vec3};
 
 pub fn example_normal() -> (World, ViewportConfig, LensConfig) {
     // Materials
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.03, 0.03, 0.03)));
+    let material_ground = Rc::new(Lambertian::from_albedo(Vec3::new(0.03, 0.03, 0.03)));
     let material_center = Rc::new(Normal::new());
 
     // Objects

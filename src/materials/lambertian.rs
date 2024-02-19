@@ -1,24 +1,29 @@
 use rand::prelude::ThreadRng;
+use std::rc::Rc;
 
 use crate::geometry::HitRecord;
 use crate::materials::Material;
 use crate::optics::Ray;
+use crate::textures::{Solid, Texture};
 use crate::utils::{Vec3, Vec3Ext};
 
 #[derive(Debug)]
 pub struct Lambertian {
-    albedo: Vec3,
+    albedo: Rc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
-        Self { albedo }
+    pub fn from_albedo(albedo: Vec3) -> Self {
+        Self::from_texture(Rc::new(Solid::new(albedo)))
+    }
+    pub fn from_texture(texture: Rc<dyn Texture>) -> Self {
+        Self { albedo: texture }
     }
 }
 
 impl Default for Lambertian {
     fn default() -> Self {
-        Self::new(Vec3::new(0.5, 0.5, 0.5))
+        Self::from_albedo(Vec3::new(0.5, 0.5, 0.5))
     }
 }
 
@@ -38,7 +43,7 @@ impl Material for Lambertian {
         }
 
         *scattered = Ray::new(rec.p, scatter_direction, r_in.time());
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.sample(rec.u, rec.v, &rec.p);
         true
     }
 }

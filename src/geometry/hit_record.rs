@@ -9,15 +9,27 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub mat: Rc<dyn Material>,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
 }
 
 impl HitRecord {
-    pub fn new(p: Vec3, normal: Vec3, t: f64, mat: Rc<dyn Material>, front_face: bool) -> Self {
+    pub fn new(
+        p: Vec3,
+        normal: Vec3,
+        t: f64,
+        u: f64,
+        v: f64,
+        mat: Rc<dyn Material>,
+        front_face: bool,
+    ) -> Self {
         Self {
             p,
             normal,
             t,
+            u,
+            v,
             mat,
             front_face,
         }
@@ -30,7 +42,9 @@ impl Default for HitRecord {
             p: Vec3::zeros(),
             normal: Vec3::zeros(),
             t: 0.0,
-            mat: Rc::new(Lambertian::new(Vec3::zeros())),
+            u: 0.0,
+            v: 0.0,
+            mat: Rc::new(Lambertian::from_albedo(Vec3::zeros())),
             front_face: false,
         }
     }

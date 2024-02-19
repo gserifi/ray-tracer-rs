@@ -7,7 +7,7 @@ use crate::geometry::{
 };
 use crate::materials::Material;
 use crate::optics::Ray;
-use crate::utils::{Interval, Point3, Vec3};
+use crate::utils::{Interval, Point3, Vec3, Vec3Ext};
 
 #[derive(Debug)]
 pub struct Triangle {
@@ -81,6 +81,8 @@ impl Hittable for Triangle {
         let normal = (self.normals[0] * (1.0 - u - v) + self.normals[1] * u + self.normals[2] * v)
             .normalize();
         rec.set_face_normal(r, normal);
+        rec.u = self.uvs[0].x() * (1.0 - u - v) + self.uvs[1].x() * u + self.uvs[2].x() * v;
+        rec.v = self.uvs[0].y() * (1.0 - u - v) + self.uvs[1].y() * u + self.uvs[2].y() * v;
         rec.mat = self.mat.clone();
 
         true
