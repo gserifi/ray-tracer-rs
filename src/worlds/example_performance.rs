@@ -28,8 +28,7 @@ pub fn example_performance() -> (World, ViewportConfig, LensConfig) {
     }
 
     // World
-    // let world = World::new(objects);
-    let world = BvhNode::from_hittable_list(&World::new(objects));
+    let world = BvhNode::new(&mut objects);
     let world = World::new(vec![Rc::new(ground), Rc::new(world)]);
 
     let viewport_config = ViewportConfig {

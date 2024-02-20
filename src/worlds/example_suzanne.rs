@@ -19,7 +19,7 @@ pub fn example_suzanne() -> (World, ViewportConfig, LensConfig) {
     );
 
     let suzanne = TriangleMesh::new(
-        "assets/meshes/suzanne.obj",
+        "assets/meshes/suzanne_smooth.obj",
         Point3::new(0.0, 0.8, 0.0),
         1.0,
         material_suzanne.clone(),

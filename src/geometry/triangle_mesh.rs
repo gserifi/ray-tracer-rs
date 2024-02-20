@@ -95,7 +95,8 @@ impl Hittable for Triangle {
 
 #[derive(Debug)]
 pub struct TriangleMesh {
-    bvh_node: BvhNode,
+    bvh_root: BvhNode,
+    // octree_root: OctreeNode,
     bbox: AABB,
 }
 
@@ -143,23 +144,24 @@ impl TriangleMesh {
                         _normals[i] = normals[indices[2] - 1];
                         _uvs[i] = uvs[indices[1] - 1];
                     }
-                    let face = Rc::new(Triangle::new(_vertices, _normals, _uvs, mat.clone()));
-                    faces.push(face as Rc<dyn Hittable>);
+                    let face: Rc<dyn Hittable> =
+                        Rc::new(Triangle::new(_vertices, _normals, _uvs, mat.clone()));
+                    faces.push(face);
                 }
                 _ => {}
             }
         }
 
         let bbox = AABB::wrap_objects(&faces);
-        let bvh_node = BvhNode::new(&faces, 0, faces.len());
+        let bvh_root = BvhNode::new(&mut faces);
 
-        Self { bvh_node, bbox }
+        Self { bvh_root, bbox }
     }
 }
 
 impl Hittable for TriangleMesh {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
-        self.bvh_node.hit(r, t, rec)
+        self.bvh_root.hit(r, t, rec)
     }
 
     fn bounding_box(&self) -> &AABB {

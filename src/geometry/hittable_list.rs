@@ -23,14 +23,7 @@ impl HittableList {
 
 impl Default for HittableList {
     fn default() -> Self {
-        Self::new(Vec::new())
-    }
-}
-
-impl HittableList {
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
-        self.bbox = AABB::wrap_boxes(&self.bbox, object.bounding_box());
-        self.objects.push(object);
+        Self::new(vec![])
     }
 }
 
@@ -43,7 +36,7 @@ impl Hittable for HittableList {
             return false;
         }
 
-        for object in &self.objects {
+        for object in self.objects.iter() {
             if object.hit(r, Interval::new(t.min, closest_so_far), rec) {
                 hit_anything = true;
                 closest_so_far = rec.t;

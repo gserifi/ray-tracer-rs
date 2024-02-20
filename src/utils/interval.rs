@@ -31,6 +31,10 @@ impl Interval {
         self.min < x && x < self.max
     }
 
+    pub fn intersects(&self, other: &Interval) -> bool {
+        self.max > other.min && self.min < other.max
+    }
+
     pub fn clamp(&self, x: f64) -> f64 {
         x.max(self.min).min(self.max)
     }

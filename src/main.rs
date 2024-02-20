@@ -5,7 +5,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use lib::optics::{Camera, RenderOutputConfig};
-use lib::worlds::example_textures as scene;
+use lib::worlds::example_suzanne as scene;
 
 use RenderMode::{Dev, Latest};
 
@@ -15,14 +15,14 @@ fn render(render_mode: RenderMode) -> RgbImage {
     let render_output_config = match render_mode {
         Dev => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
-            image_width: 1080,
-            samples_per_pixel: 15,
+            image_width: 300,
+            samples_per_pixel: 1,
             max_depth: 30,
         },
         Latest => RenderOutputConfig {
             aspect_ratio: 16.0 / 9.0,
-            image_width: 3840,
-            samples_per_pixel: 15,
+            image_width: 1080,
+            samples_per_pixel: 3,
             max_depth: 30,
         },
     };
