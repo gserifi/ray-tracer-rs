@@ -38,7 +38,7 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [x] 2 Motion Blur
 - [x] 3 Bounding Volume Hierarchies
 - [x] 4 Texture Mapping
-- [ ] 5 Perlin Noise
+- [x] 5 Perlin Noise
 - [ ] 6 Quadrilaterals
 - [ ] 7 Lights
 - [ ] 8 Instances
