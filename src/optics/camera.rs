@@ -150,6 +150,16 @@ impl Camera {
             let mut scattered = Ray::new(Point3::zeros(), Vec3::zeros(), 0.0);
             let mut attenuation = Color::zeros();
 
+            // let max_intersection_checks = 100.0;
+            // rec.mat = Rc::new(Lambertian::from_albedo(Color::new(
+            //     (rec.debug.intersection_checks as f64 / max_intersection_checks)
+            //         .min(max_intersection_checks),
+            //     0.0,
+            //     0.0,
+            // )));
+
+            // println!("{} intersection checks", rec.debug.intersection_checks);
+
             if rec
                 .mat
                 .scatter(r, &rec, &mut self.rng, &mut attenuation, &mut scattered)

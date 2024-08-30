@@ -3,10 +3,11 @@ use std::fmt::Debug;
 use std::rc::Rc;
 
 use crate::geometry::{accel::AABB, HitRecord, Hittable};
-use crate::materials::{Lambertian, Material};
+use crate::materials::Material;
 use crate::optics::Ray;
 use crate::utils::{Interval, Point3, Vec3, Vec3Ext};
 
+#[derive(Clone)]
 pub struct Sphere {
     center: Point3,
     radius: f64,
@@ -54,16 +55,6 @@ impl Sphere {
     }
 }
 
-impl Default for Sphere {
-    fn default() -> Self {
-        Self::new(
-            Point3::new(0.0, 0.0, -1.0),
-            0.5,
-            Rc::new(Lambertian::default()),
-        )
-    }
-}
-
 impl Sphere {
     pub fn center(&self, time: f64) -> Point3 {
         self.center + self.center_vec * time
@@ -82,6 +73,12 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
+        if !self.bbox.hit(r, t, rec) {
+            return false;
+        }
+
+        rec.debug.inc_intersection_checks();
+
         let center = self.center(r.time());
         let oc = r.origin() - center;
         let a = 1.0; // Note that direction vector is normalized
@@ -108,12 +105,16 @@ impl Hittable for Sphere {
         let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(r, outward_normal);
         (rec.u, rec.v) = self.uv(&outward_normal);
-        rec.mat = self.mat.clone();
+        rec.mat = Rc::clone(&self.mat);
 
         true
     }
 
     fn bounding_box(&self) -> &AABB {
         &self.bbox
+    }
+
+    fn clone_box(&self) -> Box<dyn Hittable> {
+        Box::new(self.clone())
     }
 }

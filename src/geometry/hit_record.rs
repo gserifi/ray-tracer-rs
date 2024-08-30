@@ -4,6 +4,18 @@ use crate::materials::{Lambertian, Material};
 use crate::optics::Ray;
 use crate::utils::Vec3;
 
+#[derive(Clone, Default)]
+pub struct HitRecordDebug {
+    pub intersection_checks: u32,
+}
+
+impl HitRecordDebug {
+    pub fn inc_intersection_checks(&mut self) {
+        self.intersection_checks += 1;
+    }
+}
+
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,
@@ -12,28 +24,7 @@ pub struct HitRecord {
     pub u: f64,
     pub v: f64,
     pub front_face: bool,
-}
-
-impl HitRecord {
-    pub fn new(
-        p: Vec3,
-        normal: Vec3,
-        t: f64,
-        u: f64,
-        v: f64,
-        mat: Rc<dyn Material>,
-        front_face: bool,
-    ) -> Self {
-        Self {
-            p,
-            normal,
-            t,
-            u,
-            v,
-            mat,
-            front_face,
-        }
-    }
+    pub debug: HitRecordDebug,
 }
 
 impl Default for HitRecord {
@@ -46,6 +37,7 @@ impl Default for HitRecord {
             v: 0.0,
             mat: Rc::new(Lambertian::from_albedo(Vec3::zeros())),
             front_face: false,
+            debug: HitRecordDebug::default(),
         }
     }
 }

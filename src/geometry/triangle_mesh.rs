@@ -1,15 +1,12 @@
-use std::path::Path;
-use std::rc::Rc;
-
-use crate::geometry::{
-    accel::{BvhNode, AABB},
-    HitRecord, Hittable,
-};
+use crate::geometry::{accel::AABB, Bvh, HitRecord, Hittable};
 use crate::materials::Material;
 use crate::optics::Ray;
 use crate::utils::{Interval, Point3, Vec3, Vec3Ext};
+use std::path::Path;
+use std::rc::Rc;
+use std::time::Instant;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Triangle {
     vertices: [Point3; 3],
     normals: [Vec3; 3],
@@ -38,11 +35,19 @@ impl Triangle {
     }
 }
 
+impl From<Triangle> for Box<dyn Hittable> {
+    fn from(triangle: Triangle) -> Self {
+        Box::new(triangle)
+    }
+}
+
 impl Hittable for Triangle {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
-        if !self.bbox.hit(r, t) {
+        if !self.bbox.hit(r, t, rec) {
             return false;
         }
+
+        rec.debug.inc_intersection_checks();
 
         let e1 = self.vertices[1] - self.vertices[0];
         let e2 = self.vertices[2] - self.vertices[0];
@@ -83,7 +88,7 @@ impl Hittable for Triangle {
         rec.set_face_normal(r, normal);
         rec.u = self.uvs[0].x() * (1.0 - u - v) + self.uvs[1].x() * u + self.uvs[2].x() * v;
         rec.v = self.uvs[0].y() * (1.0 - u - v) + self.uvs[1].y() * u + self.uvs[2].y() * v;
-        rec.mat = self.mat.clone();
+        rec.mat = Rc::clone(&self.mat);
 
         true
     }
@@ -91,13 +96,15 @@ impl Hittable for Triangle {
     fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
+
+    fn clone_box(&self) -> Box<dyn Hittable> {
+        Box::new(self.clone())
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TriangleMesh {
-    bvh_root: BvhNode,
-    // octree_root: OctreeNode,
-    bbox: AABB,
+    bvh: Bvh,
 }
 
 impl TriangleMesh {
@@ -144,27 +151,35 @@ impl TriangleMesh {
                         _normals[i] = normals[indices[2] - 1];
                         _uvs[i] = uvs[indices[1] - 1];
                     }
-                    let face: Rc<dyn Hittable> =
-                        Rc::new(Triangle::new(_vertices, _normals, _uvs, mat.clone()));
+                    let face = Triangle::new(_vertices, _normals, _uvs, mat.clone()).into();
                     faces.push(face);
                 }
                 _ => {}
             }
         }
 
-        let bbox = AABB::wrap_objects(&faces);
-        let bvh_root = BvhNode::new(&mut faces);
+        let before_bvh = Instant::now();
+        let bvh = Bvh::new(&mut faces);
+        println!(
+            "BVH Construction: {:.2?}ms",
+            before_bvh.elapsed().as_millis()
+        );
 
-        Self { bvh_root, bbox }
+        Self { bvh }
     }
 }
 
 impl Hittable for TriangleMesh {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
-        self.bvh_root.hit(r, t, rec)
+        self.bvh.hit(r, t, rec)
+        // self.list.hit(r, t, rec)
     }
 
     fn bounding_box(&self) -> &AABB {
-        &self.bbox
+        self.bvh.bounding_box()
+    }
+
+    fn clone_box(&self) -> Box<dyn Hittable> {
+        Box::new(self.clone())
     }
 }
