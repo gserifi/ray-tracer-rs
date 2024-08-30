@@ -3,15 +3,19 @@ use std::rc::Rc;
 use crate::geometry::{Sphere, TriangleMesh, World};
 use crate::materials::{Dielectric, Lambertian, Metal};
 use crate::optics::{LensConfig, ViewportConfig};
+use crate::textures::PerlinNoise;
 // use crate::textures::UVImage;
 use crate::utils::{Color, Point3, Vec3};
 
 pub fn example_suzanne() -> (World, ViewportConfig, LensConfig) {
     // Materials
-    let material_ground = Rc::new(Metal::new(Color::new(0.6, 0.6, 0.8) * 0.7, 0.0));
+    let perlin = Rc::new(PerlinNoise::new_bw(4.0, 20.0));
+    let material_ground = Rc::new(Lambertian::from_texture(perlin.clone()));
+    // let material_ground = Rc::new(Metal::new(Color::new(0.6, 0.6, 0.8) * 0.7, 0.0));
     // let material_ground = Rc::new(Lambertian::from_albedo(Color::new(0.6, 0.6, 0.8) * 0.7));
     // let material_suzanne = Rc::new(Normal::new());
-    let material_suzanne = Rc::new(Dielectric::frosted(1.5, 0.05));
+
+    let material_suzanne = Rc::new(Dielectric::frosted(1.5, 0.01));
     // let material_suzanne = Rc::new(Dielectric::new(1.5));
     // let material_suzanne = Rc::new(Lambertian::from_texture(Rc::new(UVImage::new(
     //     "assets/textures/monkey.png",
