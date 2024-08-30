@@ -1,7 +1,6 @@
 use std::fmt::Debug;
-use std::rc::Rc;
 
-use crate::geometry::Hittable;
+use crate::geometry::{HitRecord, Hittable};
 use crate::optics::Ray;
 use crate::utils::{Interval, Point3, Vec3Ext};
 
@@ -32,16 +31,19 @@ impl Axis {
 
 #[derive(Debug, Clone)]
 pub struct AABB {
-    pub min: Box<Point3>,
-    pub max: Box<Point3>,
+    pub min: Point3,
+    pub max: Point3,
 }
 
 impl AABB {
     fn new(min: Point3, max: Point3) -> Self {
-        Self {
-            min: Box::new(min),
-            max: Box::new(max),
-        }
+        Self { min, max }
+    }
+
+    pub fn empty() -> Self {
+        let min = Point3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY);
+        let max = Point3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY);
+        Self::new(min, max)
     }
 
     pub fn wrap_points(a: &Point3, b: &Point3) -> Self {
@@ -95,7 +97,10 @@ impl AABB {
         )
     }
 
-    pub fn wrap_objects(objects: &[Rc<dyn Hittable>]) -> Self {
+    pub fn wrap_objects(objects: &[Box<dyn Hittable>]) -> Self {
+        if objects.is_empty() {
+            return Self::empty();
+        }
         let bbox = objects[0].bounding_box();
         let mut bbox = AABB::wrap_points(&bbox.min, &bbox.max);
 
@@ -143,7 +148,7 @@ impl AABB {
     }
 
     pub fn center(&self) -> Point3 {
-        (*self.min + *self.max) / 2.0
+        (self.min + self.max) / 2.0
     }
 
     pub fn volume(&self) -> f64 {
@@ -160,51 +165,40 @@ impl AABB {
         2.0 * (x * y + y * z + z * x)
     }
 
-    pub fn octant(&self, i: usize) -> AABB {
-        let x = if i & 1 == 0 {
-            self.x().min
-        } else {
-            self.x().max
-        };
-        let y = if i & 2 == 0 {
-            self.y().min
-        } else {
-            self.y().max
-        };
-        let z = if i & 4 == 0 {
-            self.z().min
-        } else {
-            self.z().max
-        };
-        let corner = Point3::new(x, y, z);
-        let center = self.center();
-        AABB::wrap_points(&center, &corner)
-    }
-
     pub fn intersects(&self, other: &AABB) -> bool {
         self.x().intersects(&other.x())
             && self.y().intersects(&other.y())
             && self.z().intersects(&other.z())
     }
 
-    pub fn hit(&self, ray: &Ray, t: Interval) -> bool {
-        for axis in [Axis::X, Axis::Y, Axis::Z].iter() {
-            let interval = self.axis(axis);
-            let inv_d = 1.0 / ray.direction()[axis.idx()];
-            let orig = ray.origin()[axis.idx()];
+    pub fn hit(&self, ray: &Ray, t: Interval, rec: &mut HitRecord) -> bool {
+        rec.debug.inc_intersection_checks();
 
-            let mut t0 = (interval.min - orig) * inv_d;
-            let mut t1 = (interval.max - orig) * inv_d;
+        let interval_x = self.x();
+        let interval_y = self.y();
+        let interval_z = self.z();
 
-            if inv_d < 0.0 {
-                (t0, t1) = (t1, t0);
-            }
+        let inv_dx = 1.0 / ray.direction().x();
+        let inv_dy = 1.0 / ray.direction().y();
+        let inv_dz = 1.0 / ray.direction().z();
 
-            if t1.min(t.max) <= t0.max(t.min) {
-                return false;
-            }
+        let orig = ray.origin();
+
+        let t_x0 = (interval_x.min - orig.x()) * inv_dx;
+        let t_x1 = (interval_x.max - orig.x()) * inv_dx;
+        let t_y0 = (interval_y.min - orig.y()) * inv_dy;
+        let t_y1 = (interval_y.max - orig.y()) * inv_dy;
+        let t_z0 = (interval_z.min - orig.z()) * inv_dz;
+        let t_z1 = (interval_z.max - orig.z()) * inv_dz;
+
+        let t_min = t_x0.min(t_x1).max(t_y0.min(t_y1).max(t_z0.min(t_z1)));
+        let t_max = t_x0.max(t_x1).min(t_y0.max(t_y1).min(t_z0.max(t_z1)));
+
+        if t_min > t_max || t_min > t.max || t_max < t.min {
+            return false;
         }
 
+        rec.t = t_min;
         true
     }
 }

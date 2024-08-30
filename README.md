@@ -1,4 +1,5 @@
 # ray-tracer-rs
+
 Physically Based Renderer written in Rust, based on the book series *"Ray Tracing in One Weekend"* by Peter Shirley.
 
 ---
@@ -8,8 +9,10 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 ### Latest Render
 
 ![Latest Render](./latest.png)
+*[Dragon](https://casual-effects.com/data/) with 871'306 Triangles, rendered at 3500x2160/256spp in 23mins.*
 
 ### Ray Tracing in One Weekend <sup>[[1]](#references)</sup>
+
 - [x] 1 Overview
 - [x] 2 Output an Image
 - [x] 3 The vec3 Class
@@ -26,9 +29,11 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [x] 14 Where Next?
 
 #### Follow Up
+
 - [x] Multithreading
 
 ### Ray Tracing: The Next Week <sup>[[2]](#references)</sup>
+
 - [x] 1 Overview
 - [x] 2 Motion Blur
 - [x] 3 Bounding Volume Hierarchies
@@ -41,11 +46,13 @@ Physically Based Renderer written in Rust, based on the book series *"Ray Tracin
 - [ ] 10 A Scene Testing All New Features
 
 #### Follow Up
-- [ ] Octree
+
+- [x] Optimize BVH
 - [x] Triangle Meshes
 - [x] Frosted Glass
 
 ### Ray Tracing: The Rest of Your Life <sup>[[3]](#references)</sup>
+
 - [ ] 1 Overview
 - [ ] 2 A Simple Monte Carlo Program
 - [ ] 3 One Dimensional Monte Carlo Integration

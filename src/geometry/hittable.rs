@@ -8,11 +8,12 @@ pub trait Hittable: Debug {
     fn hit(&self, r: &Ray, t: Interval, rec: &mut HitRecord) -> bool;
 
     fn bounding_box(&self) -> &AABB;
-    fn bounding_box_owned(&self) -> AABB {
-        self.bounding_box().clone()
-    }
 
-    fn height(&self) -> usize {
-        1
+    fn clone_box(&self) -> Box<dyn Hittable>;
+}
+
+impl Clone for Box<dyn Hittable> {
+    fn clone(&self) -> Self {
+        self.clone_box()
     }
 }
