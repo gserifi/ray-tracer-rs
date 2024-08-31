@@ -4,6 +4,7 @@ pub mod example;
 // mod example_normal;
 // mod example_performance;
 pub mod example_perlin;
+pub mod example_quads;
 pub mod example_suzanne;
 // mod example_textures;
 
@@ -13,5 +14,6 @@ pub use example::*;
 // pub use example_normal::*;
 // pub use example_performance::*;
 pub use example_perlin::*;
+pub use example_quads::*;
 pub use example_suzanne::*;
 // pub use example_textures::*;
