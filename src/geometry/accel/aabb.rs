@@ -51,10 +51,12 @@ impl AABB {
         let y = Interval::new(a.y().min(b.y()), a.y().max(b.y()));
         let z = Interval::new(a.z().min(b.z()), a.z().max(b.z()));
 
-        Self::new(
+        let mut aabb = Self::new(
             Point3::new(x.min, y.min, z.min),
             Point3::new(x.max, y.max, z.max),
-        )
+        );
+        aabb.pad_to_min();
+        aabb
     }
 
     pub fn wrap_boxes(box0: &AABB, box1: &AABB) -> Self {
@@ -113,6 +115,18 @@ impl AABB {
 }
 
 impl AABB {
+    fn pad_to_min(&mut self) {
+        let delta = 0.0001;
+        for i in 0..3 {
+            let ax = self.axis(&Axis::from_idx(i));
+            if ax.size() < delta {
+                let expanded = ax.expand(delta);
+                self.min[i] = expanded.min;
+                self.max[i] = expanded.max;
+            }
+        }
+    }
+
     pub fn axis(&self, n: &Axis) -> Interval {
         match n {
             Axis::X => Interval::new(self.min.x(), self.max.x()),

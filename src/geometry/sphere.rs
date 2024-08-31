@@ -102,10 +102,10 @@ impl Hittable for Sphere {
 
         rec.t = root;
         rec.p = r.at(rec.t);
+        rec.mat = Rc::clone(&self.mat);
         let outward_normal = (rec.p - center) / self.radius;
         rec.set_face_normal(r, outward_normal);
         (rec.u, rec.v) = self.uv(&outward_normal);
-        rec.mat = Rc::clone(&self.mat);
 
         true
     }
